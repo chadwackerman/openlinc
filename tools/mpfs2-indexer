@@ -1,0 +1,315 @@
+#! /usr/bin/perl
+#
+# An indexing program to enable server-side includes in
+# the HTTP2 Microchip webserver.
+#
+# Created by Martin Oldfield, 2007-11-29
+#
+# History
+#
+#  2007-11-29 MJO    Original version
+# 
+use strict;
+use warnings;
+
+use Getopt::Long;
+use Pod::Usage;
+
+use version; our $VERSION = qv('0.1.0');
+
+my %Opt;
+GetOptions(\%Opt, "check!", "dump!", "help!", "info!", "verbose!", "version!", )
+  or pod2usage();
+
+if ($Opt{version})
+  {
+    print "Version $VERSION\n";
+    exit;
+  }
+
+pod2usage(verbose => 2)
+  if $Opt{help} || $Opt{info};
+
+my $tag_file = shift(@ARGV)
+  or pod2usage;
+
+my $tags = parse_tagfile($tag_file);
+
+foreach my $source (@ARGV)
+  {
+    if ($source =~ /#$/)
+      {
+        print "Ignoring source file $source\n";
+        next;
+      }
+
+    print "$source\n" if $Opt{verbose};
+
+    (my $dest = $source) =~ s/.$/#/;
+
+    my $index = index_file($tags, $source);
+
+    if    ($Opt{dump})  { dump_index($index);         }
+    elsif ($Opt{check}) { check_index($index, $dest); }
+    else                { save_index($index, $dest);  }
+  }
+
+# Given the name of a file, return a hash from tag name (i.e. something we
+# might find between ~ in the file) to the tag number.
+sub parse_tagfile
+  {
+    my $file = shift;
+    
+    die "Tagfile $file isn't readable\n"
+      unless $file;
+
+    local $/;
+    open(my $fh, "<", $file)
+      or die "Unable to read tagfile $file: $!\n";
+
+    my $tag_list = <$fh>;
+    $tag_list =~ s/\s*//g; # Ignore white space
+
+    my %tag; # Hash from tag to number
+
+    my $i = 0;
+    $tag{$_} = $i++ foreach split(/\|/, $tag_list);
+
+    die "No tags found in $file---indexing is pointless!\n"
+      unless keys %tag;
+
+    return \%tag;
+  }
+
+# Given a list of tags, and a file to index, return a list of
+# (position,tag number) pairs.
+sub index_file
+  {
+    my ($tag_list, $file) = @_;
+
+    die "Tagfile $file isn't readable\n"
+      unless $file;
+
+    local $/;
+    open(my $fh, "<", $file)
+      or die "Unable to read file $file for indexing: $!\n";
+      
+    my $text = <$fh>;
+
+    my @tags;
+    while($text =~ /~(.*?)~/gsc)
+      {
+        my $pos = pos($text) - length($1) - 2;
+        my $tag = $1;
+        my $tag_number = $tag_list->{$tag};
+
+        if (!defined $tag_number)
+          {
+            print "$file:$pos:Unable to find tag '$tag'\n";
+            next;
+          }
+
+        push(@tags, [ $pos, $tag_number, $tag ]);
+      }
+
+    return \@tags;
+  }
+
+# Dump the index to stdout
+sub dump_index
+  {
+    my $index = shift;
+
+    foreach my $i (@$index)
+      {
+        my ($pos, $tag_number, $tag) = @$i;
+
+        printf "%04x %4x %s\n", $pos, $tag_number, $tag;
+      }
+  }
+
+# Dump the index to the disc file
+sub save_index
+  {
+    my ($index, $file) = @_;
+
+    open(my $fh, ">", $file);
+    unless ($fh)
+      {
+        print "Unable to open index file $file: $!\n";
+        return;
+      }
+  
+    # Accumulate the position:tag pairs here
+    foreach my $i (@$index)
+      {
+        my ($pos, $tag) = @$i;
+        print {$fh} pack("VV", $pos, $tag);
+      }
+  }
+
+# Check that the index matches the file stored on disc
+# primarily useful for checking that this code works
+sub check_index
+  {
+    my ($index, $file) = @_;
+
+    # Accumulate the position:tag pairs here
+    my %seen;
+    foreach my $i (@$index)
+      {
+        my ($pos, $tag) = @$i;
+        $seen{sprintf "%04x:%04x", $pos, $tag} .= "c";
+      }
+
+    open(my $fh, "<", $file);
+    unless ($fh)
+      {
+        print "Unable to check index file $file: $!\n";
+        return;
+      }
+  
+    while(read($fh, my $buffer, 8))
+      {
+        my ($pos, $tag) = unpack("VV", $buffer);
+        $seen{sprintf "%04x:%04x", $pos, $tag} .= "s";
+      }
+       
+    my $n_good = 0;
+    my %do = ( 
+               'c'  => sub { print "$_[0] not in file\n" },
+               's'  => sub { print "$_[0] only in file\n" },
+               'cs' => sub { $n_good++; }
+              );
+
+    foreach my $k (sort keys %seen)
+      {
+        $do{$seen{$k}}->($k);
+      }
+    
+    print "$n_good tags matched\n";
+  }
+
+__END__
+
+=head1 NAME
+ 
+mpfs2-indexer - An indexer for the Microchip HTTP2 server.
+  
+=head1 SYNOPSIS
+
+    # Normal operation 
+    mpfs2-indexer HTTPPrint.idx foo.htm bar.htm ...
+
+    # Dump the things we're indexing to stdout
+    mpfs2-indexer --dump HTTPPrint.idx foo.htm bar.htm ...
+
+    # Check that we agre with the exising index file
+    mpfs2-indexer --check HTTPPrint.idx foo.htm bar.htm ...
+
+    # Get documentation
+    mpfs2-indexer --help
+
+=head1 DESCRIPTION
+
+The HTTP server in Microchip's TCP-IP stack provides a mechanism for
+server side includes: things like ~foo~ will be replaced with other
+text e.g. a sensor reading or the contents of another file. Formally,
+a subroutine provides the replacement for each tag.
+
+Canonically the tags are listed in the HTTPPrint.idx file. This file
+is automatically translated into function declarations and a dispatch
+table in HTTPPrint.h, whilst the functions themselves are defined by
+the application programmer in CustomHTTPApp.c.
+
+In the interests efficiency, the positions of all the ~foo~ blocks in
+the HTML code need to be computed ahead of time. Microchip do this
+inside the MPFS2.exe utility which assembles the MPSF2 filesystem
+image: for a file called wibble.htm, the index points are stored in a
+file called wibble.ht#. This program will generate the .ht# files for
+given .htm files.
+
+=head1 REQUIRED ARGUMENTS
+
+Only one argument is necessary: the name of the .idx file which contains
+the list of tags. If this file isn't specified, or if it's empty then
+the program will terminate. Typically the key thing here is the path
+the file: the file is almost always called HTTPPrint.idx.
+
+The file should contain an ordered list of tags separated by |. White
+space is significant, so rogue line breaks should be avoided.
+
+Although not strictly necessary, the program won't actually do
+anything unless a list of source files to index is also provided.
+
+So the canonical arguments are
+
+  HTTPPrint.idx foo.htm bar.htm
+ 
+This will index foo.htm and bar.htm, writing the results to foo.ht# 
+and bar.ht# respectively.
+
+If we couldn't find anything to index, no index file will be
+created. Any existing index file will be removed.
+
+=head1 OPTIONS
+
+Although the program normally writes index files, it can be coerced
+into just displaying the index data, or checking its calculations
+against an existing index:
+
+=over
+
+=item --dump
+
+Print the tags found to stdout, instead of saving them to the .ht# files.
+
+=item --check
+
+Check the contents of the .ht# file against our own calculation.
+
+=item --help
+
+=item --info
+
+Display this manpage.
+
+=item --verbose
+
+Display more information as the program runs.
+
+=item --version
+
+Display version number.
+
+=back
+ 
+=head1 DEPENDENCIES
+
+We use L<Getopt::Long> to parse the arguments, and L<Pod::Usage> to
+display usage information and help.
+
+=head1 BUGS AND LIMITATIONS
+
+There are no known bugs in this application.
+
+Please report problems to the author.
+
+Patches are welcome.
+ 
+=head1 AUTHOR
+
+Martin Oldfield, m@mjo.tc.
+ 
+=head1 LICENCE AND COPYRIGHT
+ 
+Copyright (c) 2007 Martin Oldfield. All rights reserved.
+ 
+This module is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself. See L<perlartistic>.
+ 
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+
+

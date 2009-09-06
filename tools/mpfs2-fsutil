@@ -1,0 +1,539 @@
+#! /usr/bin/perl
+#
+# Packer/unpacker for Microchip MPFS2 filesystem images.
+#
+# Created by Martin Oldfield, 2007-11-29
+#
+# History
+#
+#  2007-11-20 0.1.0  MJO     Original version.
+#
+#  2008-01-10 0.1.1  MJO     Read and write files with :raw layer (see perlio)
+#                            This should be good for DOS and was inspired by FEj's
+#                            patches.
+#
+#  2008-01-15 0.1.2  MJO     Add --force_timestamps option to aid testing.
+#
+#  2008-01-15 0.1.3  MJO     Add --max_fs_size option.
+# 
+use strict;
+use warnings;
+
+use Getopt::Long;
+use Pod::Usage;
+use Date::Manip;
+use POSIX qw(strftime);
+
+use YAML;
+
+use version; our $VERSION = qv('0.1.3');
+
+# Constant information about the filesystem
+my $MAGIC_SIZE   = 8;
+my $MAGIC_FORMAT = "A4vv";
+my $FAT_SIZE     = 24;
+my @FAT_FIELDS   = qw(name_hash flags name_addr data_addr length timestamp microtime);
+my $FAT_FORMAT   = "vvVVVVV";
+my $FLAG_GZIP    = 1;
+my $FLAG_INDEXED = 2;
+
+my @tasks = qw(create extract list);
+
+my %Opt = (max_fs_size => 64 * 1024 * 1024);
+
+GetOptions(\%Opt, 
+           "force_timestamps=s",
+           "max_fs_size=i",
+           map { "--$_!" } @tasks, qw(verbose info help version))
+  or pod2usage();
+
+if ($Opt{version})
+  {
+    print "Version $VERSION\n";
+    exit;
+  }
+
+pod2usage(verbose => 2)
+  if $Opt{help} || $Opt{info};
+
+my @chosen_tasks = grep { $Opt{$_} } @tasks;
+pod2usage
+  unless @chosen_tasks == 1;
+
+my $task = $chosen_tasks[0];
+
+if ($task eq "extract" || $task eq "list")
+  {
+    my $file = shift @ARGV
+      or pod2usage;
+
+    print "Ignoring --force_timestamps because we're not creating a filesystem.\n"
+      if $Opt{force_timestamps};
+
+    my $fs = load_file($file);
+    die "$file: Invalid MPFS file $file: $fs->{error}\n"
+      if $fs->{error};
+
+    my $f = parse_fs($fs->{data});
+    die "$file: Invalid MPFS file $file: $f->{error}\n"
+      if $f->{error};
+
+    print_filelist($f->{files})
+      if $task eq "list" || $Opt{verbose};
+
+    extract_files($f->{files})
+      if $task eq "extract";
+  }
+elsif ($task eq "create")
+  {
+    my $file = shift @ARGV
+      or pod2usage;
+
+    my @files = @ARGV
+      or pod2usage(-msg => "Refusing to create an empty file system");
+    
+    my $file_list = slurp_files(@files);
+    my $fs        = make_fs_from_files($file_list);
+
+    if ($Opt{verbose})
+      {
+        my $f = parse_fs($fs);
+        die "$file: Invalid MPFS file $file: $f->{error}\n"
+          if $f->{error};
+
+        print_filelist($f->{files});
+      }
+        
+    save_buffer($fs, $file);
+  }
+
+# Given a list of things (A,B,C), return a string A, B, and C.
+sub make_list
+  {
+    my @a = @_;
+    my $last_a = pop(@a);
+    return join(", ", @a, "and", $last_a);
+  }
+      
+# Given the name of a file return the contents or an error.
+# Formally either return { data => ... } or { error => ... }
+sub load_file
+  {
+    my $file = shift;
+
+    return { error => "File isn't readable" } 
+      unless -r $file;
+
+    return { error => "File is too big ($Opt{max_fs_size} limit)" }
+      if -s $file > $Opt{max_fs_size};
+
+    open(my $fh, "<:raw", $file) 
+      or return { error => "Can't open file: $!" };
+    
+    # Slurp the file
+    read($fh, my $buffer, $Opt{max_fs_size})
+      or return { error => "Unable to read magic header: $!" };
+
+    return { data => $buffer };
+  }
+
+# Given a filesystem image, parse it.
+# Return either { error => ... }
+# or { files => [ file_list ] }
+#
+# Each element of the file list is a hash:
+# {
+#     name_addr    => Offset of name string in the file image (null terminated)
+#     name         => Name of file
+#     name_hash    => Hash of name in FAT table,
+#     name_hash_ok => 1 if the above is consistent with the name,
+#     flags        => See below
+#     data_addr    => Offset of data in the file image
+#     length       => Length of data
+#     data         => Contents of file
+#     timestamp    => File timestamp in seconds since the epoch
+#     microtime    => Not sure. 
+#     local_time   => The timestamp in human-readable form
+# }
+# 
+# The flags element is a vector of bits:
+# 1 : The file contains gzip'd data, and the HTTP2 server will send an appropriate
+#     header.
+# 2 : The positions of ~tag~ tags in the file have been indexed in a
+#     separate file. If this file is called foo.htm, then the index file
+#     is foo.ht#
+sub parse_fs
+  {
+    my $buffer = shift;
+
+    # Check the header
+    my ($mpfs, $version, $n_files) = unpack($MAGIC_FORMAT, $buffer);
+    return { error => "Invalid MPFS signature" }
+      unless $mpfs eq "MPFS";
+    return { error => "Invalid MPFS version $version" }
+      unless $version == 2;
+
+    # Parse the FAT table
+    my $addr = $MAGIC_SIZE;
+    my @fat;
+    for(my $i = 0; $i < $n_files; $i++)
+      {
+        my %h;
+        @h{@FAT_FIELDS} = unpack($FAT_FORMAT, substr($buffer, $addr, $FAT_SIZE));
+        $addr += $FAT_SIZE;
+
+        $h{name}         = unpack("x$h{name_addr}Z*", $buffer);
+        $h{data}         = substr($buffer, $h{data_addr}, $h{length});
+        $h{name_hash_ok} = $h{name_hash} == hash($h{name}) ? 1 : undef;
+        $h{local_time}   = strftime("%T %F", localtime($h{timestamp}));
+
+        push(@fat, \%h);
+      }
+    
+    return { files => \@fat };
+  }
+
+# Given a list of files, print it to STDOUT
+sub print_filelist
+  {
+    my $file_list = shift;
+
+    my @fmap  = (
+      [$FLAG_GZIP => 'gzip'], 
+      [$FLAG_INDEXED => 'indexed'],
+     );
+
+    printf "%-32s %5s %-19s %4s %4s %s\n", qw(Filename Size Timestamp Hash Addr Flags);
+    foreach my $f (@$file_list)
+      {
+        $f->{hash_status} = $f->{name_hash_ok} ? "OK" : "FAIL";
+
+        my $flags = join(", ", map { $f->{flags} & $_->[0] ? ($_->[1]) : () } @fmap);
+
+        printf "%-32s %5d %19s %4s %04x %s\n", 
+          (map { $f->{$_} } 
+             qw(name length local_time hash_status data_addr)),
+            $flags;
+      }
+  }
+
+# Given a list of files, extract them to the local file system
+sub extract_files
+  {
+    my $file_list = shift;
+
+    foreach my $f (@$file_list)
+      {
+        my $name = $f->{name};
+        $name .= ".gz" if $f->{flags} & $FLAG_GZIP;
+
+        save_buffer($f->{data}, $name);
+      }
+  }
+
+# Given a list of files, make a file system image and return it
+sub make_fs_from_files
+  {
+    my $file_list = shift;
+
+    my $n_files = scalar @$file_list;
+
+    my $sizeof_fat = $n_files * $FAT_SIZE;
+
+    # Start making the FS, but leave the file stuff blank for now
+    my $fs = pack($MAGIC_FORMAT . "A$sizeof_fat", "MPFS", 2, $n_files);
+
+    # Now work through the variable length data adding them to the
+    # FS image
+    my %have_file;
+    foreach my $f (@$file_list)
+      {
+        $f->{name_addr} = length($fs);
+        
+        my $name = $f->{name};
+        $fs .= pack("Z*", $name);
+        $have_file{$name}++;
+      }
+
+    # Add data
+    foreach my $f (@$file_list)
+      {
+        $f->{data_addr} = length($fs);
+        $fs .= $f->{data};
+      }
+
+    # Now write the fat to the image 
+    my $fat_addr = $MAGIC_SIZE;
+    foreach my $f (@$file_list)
+      {
+        $f->{name_hash} = hash($f->{name});
+
+        (my $index_file = $f->{name}) =~ s/.$/#/;
+        
+        $f->{flags} |= $FLAG_INDEXED 
+          if $f->{name} !~ /#$/ && $have_file{$index_file};
+
+        substr($fs, $fat_addr, $FAT_SIZE,
+               pack($FAT_FORMAT, map { $f->{$_} } @FAT_FIELDS));
+        $fat_addr += $FAT_SIZE;
+      }
+
+    my $size = length($fs);
+    die "Filesystem is too big $size, ($Opt{max_fs_size} limit).\n"
+      if $size > $Opt{max_fs_size};
+
+    return $fs;
+  }
+
+# Given a list of file names, return a file list.  Set the flags in
+# the file list to reflect .gz suffixes and the presence of e.g. .ht#
+# files.
+#
+sub slurp_files
+  {
+    my @names = @_;
+
+    my $forced_ts;
+    if (my $ts = $Opt{force_timestamps})
+      {
+        $forced_ts = UnixDate($ts, "%s");
+      }
+    
+    local $/;
+    
+    my @files;
+    foreach my $file (@names)
+      {
+        my $fh;
+        unless (open($fh, "<:raw", $file))
+          {
+            print "Ignored x $file: $!\n";
+            next;
+          }
+          
+        my $data = <$fh>; # Slurp whole file
+
+        my @stat = stat($file);
+
+        my $flags = 0;
+        $flags |= $FLAG_GZIP if $file =~ s/\.gz$//;
+
+        my %h = (
+                  name      => $file, 
+                  data      => $data, 
+                  flags     => $flags,
+                  length    => $stat[7], 
+                  timestamp => $forced_ts || $stat[9],
+                  microtime => 0,
+                );
+
+        push(@files, \%h);
+      }
+
+    return \@files;
+  }
+
+# The hashing function used in MPFS2   
+# Given a name, return the hash of the name
+sub hash
+  {
+    my $word = shift;
+
+    my $hash = 0;
+    $hash += ord($_) foreach split(//, $word);
+    
+    return $hash;
+  }
+
+# Given a buffer and a file, write the buffer to that file
+sub save_buffer
+  {
+    my ($buffer, $file) = @_;
+
+    my $fh;
+    unless (open($fh, ">:raw", $file))
+      {
+        print "Unable to open $file: $!\n";
+        next;
+      }
+    
+    print {$fh} $buffer;
+  }
+    
+__END__
+
+=head1 NAME
+ 
+mpfs2-fsutil - Pack/unpack a MPFS2 file system image
+  
+=head1 SYNOPSIS
+
+    # Create a filesystem
+    mpfs2-fsutil --create foo.mpfs2 a.htm b.css a.ht#
+
+    # Unpack a filesystem
+    mpfs2-fsutil --extract foo.mpfs2
+
+    # See what's in a filesystem
+    mpfs2-fsutil --list foo.mpfs2
+
+    # Get documentation
+    mpfs2-fsutil --help
+
+=head1 DESCRIPTION
+
+Microchip's TCPIP stack uses the MPFS2 filesystem. Canonically, MPFS2
+images are generated by Microchip's MPFS2.exe program: this program
+is another way to do it.
+
+Unlike MPFS2.exe this program only manipulates the file system. It
+doesn't index files, or generate C files: other programs exist to do
+those tasks.
+
+Two 'magic' transformations might happen:
+
+=over
+
+=item 
+
+Any file ending in .gz will have the .gz removed, and the MPFS2
+compression flag set. The HTTP2 webserver sees this flag and sets the
+HTTP headers appropriately.
+
+Conversely any files with the compression bit set will acquire an
+extra .gz suffix when they're extracted.
+
+=item
+
+If files foo.htm and foo.ht# exist, then foo.htm will be marked as
+indexed. The L<mpfs2-indexer> program is one way to make the
+foo.ht# file. 
+
+The .htm suffix isn't special: it will work for any
+extension. Accordingly, there's the possibility of 'collisions' e.g
+for foo.htm, foo.hts, and foo.ht#. The user should avoid this!
+
+=back
+
+=head1 REQUIRED ARGUMENTS
+
+An operation viz. --create, --extract, or --list must be supplied.
+
+A filename, the name of the MPFS2 image file, must always be supplied.
+
+Additionally, if a file system is being created, at least one file to
+put in the file system must be supplied.
+
+=head1 OPTIONS
+
+=over
+
+=item --verbose
+
+Display more information about the files.
+
+=item --help
+
+=item --info
+
+Display this manpage.
+
+=item --version
+
+Display version number.
+
+=item --force_timestamps=[time]
+
+When creating a file system, force the timestamps to [time]. This is
+primarily useful when testing things. [time] can be anything
+L<Date::Manip> understands.
+
+=back
+
+=head1 EXAMPLES
+
+=over
+
+=item Create a file system
+
+mpfs2-fsutil --create foo.mpfs2 a.htm a.ht# b.png c.css.gz
+
+Create an MPFS2 image in foo.mpfs2. The MPFS2 file system will contain four files:
+
+=over
+
+=item a.htm
+
+Which will be marked as indexed.
+
+=item a.ht#
+
+A normal file.
+
+=item b.png
+
+A normal file.
+
+=item c.css
+
+Which will be marked as compressed, and served thus by the HTTP2
+webserver. Note that the file name from the MPFS2 perspective is c.css
+and not c.css.gz.
+
+=back
+
+=item Extract files from a filesystem
+
+mpfs2-fsutil --extract foo.mpfs2
+
+This extracts all the files. There's no way to only extract some of
+the files.
+
+=item List files in a filesystem
+
+mpfs2-fsutil --list foo.mpfs2
+
+=back
+ 
+=head1 DEPENDENCIES
+
+We use L<Getopt::Long> to parse the arguments, L<Pod::Usage>, to
+display usage information and help, and L<Date::Manip> to parse the
+date for --force_timestamps.
+
+=head1 BUGS AND LIMITATIONS
+
+There are no known bugs in this application.
+
+The program slurps all the data into memory in order to make things
+simple. It could be changed quite easily to avoid this, but frankly I
+think most machines running this will have more RAM than the target
+flash chip has ROM. 
+
+Please report problems to the author.
+
+Patches are welcome.
+ 
+=head2 DOS SUPPORT
+
+On systems like DOS which entertain the notion of a distinction
+between text and binary files, trouble may ensue. This program opens
+all files with the :raw L<PerlIO> layer, which should solve the
+problem. However, this has not been tested.
+
+=head1 AUTHOR
+
+Martin Oldfield, m@mjo.tc.
+ 
+=head1 LICENCE AND COPYRIGHT
+ 
+Copyright (c) 2007 Martin Oldfield. All rights reserved.
+ 
+This module is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself. See L<perlartistic>.
+ 
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+
+

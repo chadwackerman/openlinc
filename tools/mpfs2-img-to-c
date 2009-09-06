@@ -1,0 +1,275 @@
+#! /usr/bin/perl
+#
+# A program to generate C source and header files
+# from a .idx file.
+#
+# Created by FEj, 2008-01-08 (fejit [at] tiscali [dot] it)
+#
+# History
+#  2007-01-08 0.1.0  FEj     Original version
+#
+#  2008-01-13 0.1.1  MJO     Rewrote
+# 
+
+use strict;
+use warnings;
+
+use File::Find;
+use Pod::Usage;
+use Getopt::Long;
+
+use version; our $VERSION = qv('0.1.0');
+
+my %Opt = ( 
+            max_size   => 2 * 1024 * 1024,
+            c_variable => "MPFS_Start",
+          );
+
+GetOptions(\%Opt, 
+           "output=s", "max_size=i", "c_variable=s",
+           "info!", "help!", "version!", "verbose!",
+    )
+  or pod2usage();
+
+if ($Opt{version})
+  {
+    print "Version $VERSION\n";
+    exit;
+  }
+
+pod2usage(verbose => 2)
+  if $Opt{help} || $Opt{info};
+
+my $img_file = shift @ARGV
+  or pod2usage(-msg => "No image file specified");
+
+pod2usage(-msg => "Unable to open $img_file")
+  unless -f $img_file && -r $img_file;
+
+my $f = load_file($img_file);
+die "$0: Invalid image file $img_file: $f->{error}\n"
+  if $f->{error};
+
+my $array = render_as_c($f->{data});
+
+# C file name is either given on the command line, or defaults to
+# foo.c from foo.img
+my $c_file = $Opt{output};
+unless ($c_file)
+  {
+    $c_file = $img_file;
+    $c_file =~ s/\.[^\.]*$//;
+    $c_file .= ".c";
+  }
+pod2usage(-msg => "C and image file have the same names!")
+  if $c_file eq $img_file;
+
+write_c_file($c_file, $img_file, $array);
+
+########################################################################
+#
+# Given the name of a file return the contents or an error.
+# Formally either return { data => ... } or { error => ... }
+#
+sub load_file
+  {
+    my $file = shift;
+
+    return { error => "File isn't readable" } 
+      unless -r $file;
+
+    return { error => "File is too big ($Opt{max_size} limit)" }
+      if -s $file > $Opt{max_size};
+
+    open(my $fh, "<:raw:bytes", $file) 
+      or return { error => "Can't open file: $!" };
+
+    # Slurp the file
+    read($fh, my $buffer, $Opt{max_size})
+      or return { error => "Unable to read magic header: $!" };
+
+    return { data => $buffer };
+  }
+
+########################################################################
+#
+# Given an array, return a C style byte array definition
+#
+sub render_as_c
+  {
+    my $data = shift;
+
+    my $line_width = 16;
+
+    my $code = "  {\n";
+
+    my $n = length($data);
+    my $i = 0;
+    for(my $i = 0; $i < $n; $i += $line_width)
+      {
+        my $line = substr($data, $i, $line_width);
+        $code .= sprintf("    /* %04x */ ", $i)
+              .  join("", map { render_byte($_)."," } split(//, $line))
+              .  "\n";
+      }
+
+    $code =~ s/\,$//;
+    $code .= "  };\n";
+
+    return $code;
+  }
+
+sub render_byte
+  {
+    my $x = shift;
+
+    # If it's something printable render it as 'c'...
+    return " '$x'" 
+      if $x =~ /^[A-Za-z0-9_\-<>!@#$%^&*()\[\]\{\}\.\/ ~]$/;
+
+    my $o = ord($x);
+    die "Invalid byte ($o)\n" if $o < 0 || $o > 255;
+
+    # ...otherwise do it as 0x24
+    return sprintf "0x%02x", $o;
+  }
+
+########################################################################
+#
+# Write the C file: nothing more to say!
+#
+sub write_c_file
+  {
+    my ($c_file, $img_file, $code) = @_;
+
+    my $variable = $Opt{c_variable} . "[]";
+    my $now      = localtime();
+
+    my $fh;
+    if ($c_file eq "-")
+      {
+        $fh = \*STDOUT;
+      }
+    else
+      {
+        open($fh, ">", $c_file)
+          or die "Can't open $c_file: $!\n";
+      }
+    
+    print {$fh} <<"EOF";
+/***************************************************************
+* $c_file   
+*
+* DO NOT EDIT BY HAND : ALL MODIFICATIONS WILL BE LOST
+*
+* Generated from $img_file at $now.
+*
+***************************************************************/
+          
+#define __MPFSIMG2_C
+          
+#include "TCPIP Stack/TCPIP.h"
+
+#if defined(STACK_USE_MPFS2) && !defined(MPFS_USE_EEPROM)
+
+ROM BYTE $variable =
+$code
+      
+#endif // #if defined(STACK_USE_MPFS2) && !defined(MPFS_USE_EEPROM)
+EOF
+  }
+
+__END__
+
+=head1 NAME
+ 
+    mpfs2-img-to-c - Given a binary file, generate equivalent C source.
+  
+=head1 SYNOPSIS
+
+    # Normal operation: turn the image file into C file
+    mpfs2-img-to-c foo.bin
+
+    # Change output filename and variable name
+    mpfs2-img-to-c --output=bar.c --c_variable=bar foo.bin
+
+    # Get documentation
+    mpfs2-img-to-c --help
+
+=head1 DESCRIPTION
+
+Given a binary image file, make a C file which defines an equivalent
+structure in memory.
+
+Although it might be used more generally, the program is designed to
+be used to embed MPFS2 file images in PIC firmware. The template
+surrounding the C image is chosen accordingly.
+
+=head1 REQUIRED ARGUMENTS
+
+Only one arguments is necessary: an image file.
+
+=head1 OPTIONS
+
+=over
+
+=item --output=[file]
+
+Specify the name of the file into which the C will be saved. If this
+not given then it will be inferred from the name of image file:
+foo.bin will be turned into foo.c.
+
+=item --max_size=[n]
+
+Specify the maximum size of the image file which will be parsed. By
+default this is 2MB. If a file bigger than this is supplied, the
+program will die.
+
+=item --c_variable=[identifier]
+
+Specify the name of the C variable which will hold the data. This
+defaults to MPFS_Start. Regardless of what it's called, the variable
+has type ROM BYTE *.
+
+=item --help
+
+=item --info
+
+Display this manpage.
+
+=item --version
+
+Display version number.
+
+=back
+ 
+=head1 DEPENDENCIES
+
+We use L<Getopt::Long> to parse the arguments, and L<Pod::Usage> to
+display usage information and help.
+
+=head1 BUGS AND LIMITATIONS
+
+There are no known bugs in this application.
+
+There should be a way to specify a different file template.
+
+Please report problems to the author.
+
+Patches are welcome.
+ 
+=head1 AUTHOR
+
+FEj - Emilio Frusciante, fejit [at] tiscali [dot] it
+Martin Oldfield, m@mjo.tc.
+ 
+=head1 LICENCE AND COPYRIGHT
+ 
+Copyright (c) 2008 Emilio Frusciante. All rights reserved.
+ 
+This module is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself. See L<perlartistic>.
+ 
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 

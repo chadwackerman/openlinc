@@ -1,0 +1,287 @@
+#! /usr/bin/perl 
+
+use strict;
+use warnings;
+
+use File::Find;
+use Cwd qw(abs_path);
+use Pod::Usage;
+use Getopt::Long;
+
+use version; our $VERSION = qv('0.1.1');
+
+my %Opt = ( index_file_re => '\.(html?|txt)$' );
+
+GetOptions(\%Opt, 
+           "test=s", "idx=s", "image=s", "index_file_re=s", "c_file=s",
+           "c!", "force_timestamps=s", "max_fs_size=i",
+           "verbose!", "fake!", 
+           "help!", "info!", "version!",
+          )
+  or pod2usage();
+
+if ($Opt{version})
+  {
+    print "Version $VERSION\n";
+    exit;
+  }
+
+pod2usage(verbose => 2)
+  if $Opt{help} || $Opt{info};
+
+my ($dir) = @ARGV;
+
+pod2usage(-msg => "No file system directory found")
+  unless $dir && -d $dir;
+
+$Opt{image}  ||= "$dir.img";
+$Opt{c_file} ||= "$dir.c";
+
+# Generate absolute paths for all the file names we've been given
+my %file;
+foreach my $k (qw(image idx test c_file))
+  {
+    if (my $f = $Opt{$k})
+      {
+        $file{$k} = abs_path($f);
+      }
+  }
+
+########################################################################
+# IMPORTANT NOTE:
+#
+# Now cd to the top of the filesystem directory
+# The rest of the program runs like this!
+#
+########################################################################
+chdir $dir
+  or die "Can't change directory to $dir\n";
+
+# Is the IDX file dodgy ?
+pod2usage(-msg => "Unable to read IDX file $file{idx}")
+  if $file{idx} && !-r $file{idx};
+
+# Make the test file if we've been asked to
+if ($file{test})
+  {
+    pod2usage("Unable to make test file without an IDX file\n")
+      unless $file{idx};
+
+    my_system("mpfs2-make-code", $file{idx}, "--test=$file{test}");
+  }
+
+# Index the HTML files if we've been asked to
+if ($file{idx})
+  {
+    my_system("mpfs2-indexer", $file{idx}, find_files($Opt{index_file_re}));
+  }
+
+# Now make the image
+my @args = ('--create', $file{image});
+foreach my $k (qw(force_timestamps max_fs_size))
+  {
+    push(@args, "--$k", $Opt{$k}) if $Opt{$k};
+  }
+my_system("mpfs2-fsutil", @args, find_files());
+
+# If needed, make a C version too
+my_system("mpfs2-img-to-c", "--output", $file{c_file}, $file{image})
+  if $Opt{c};
+
+########################################################################   
+#
+# A simple system wrapper which halts on error and allows tracing
+#
+sub my_system
+  {
+    my ($cmd, @args) = @_;
+
+    unshift(@args, "--verbose") if $Opt{verbose};
+
+    print STDERR join(" ", $cmd, map { /[\s\$<>?*]/ ? "'$_'" : $_ } @args), "\n" 
+      if $Opt{fake} || $Opt{verbose};
+
+    return 
+      if $Opt{fake};
+
+    system($cmd, @args) == 0
+      or pod2usage(-msg => "Halted because $cmd returned an error ($?).");
+  }
+
+########################################################################
+#
+# Find a list of files matching the optional pattern below the current
+# directory
+#
+sub find_files
+  {
+    my $pat_re = shift;
+    
+    my @hits;
+
+    my $fn = sub { 
+                   return unless -f $_;    # files only
+                   my $f = $File::Find::name;
+                   $f =~ s{^\./}{};
+
+                   return if $pat_re && $f !~ /$pat_re/;
+                   push(@hits, $f);
+                 };
+
+    find($fn, ".");
+    
+    return @hits;
+  }
+
+__END__
+
+=head1 NAME
+ 
+mpfs2-make-image - Given a directory make an MPFS2 image of it
+  
+=head1 SYNOPSIS
+
+    # Normal operation: turn the image directory into image.bin
+    mpfs2-make-image image
+
+    # Fancier operation: index files
+    mpfs2-make-image --idx=HTTPPrint.idx image
+
+    # Fancier still: include an HTML test file
+    mpfs2-make-image --idx=HTTPPrint.idx --test=image/test.htm image
+
+    # Normal operation: generate C source for the image too
+    mpfs2-make-image image --c
+
+    # Get documentation
+    mpfs2-make-image --help
+
+=head1 DESCRIPTION
+
+It's quite fiddly to make an MPFS2 image, because there are two
+distinct phases: assembling all the files---which includes indexing
+the contents of files, then actually making the image.
+
+These tasks can all be done by two programs: mpfs2-fsutil and
+mpfs-make-code, but it's messy. This program tidies up the
+process. This simplicity costs some generality: the program assumes
+that the all the files to put in the image are in a single directory.
+If the files need to be indexed, then the relevant .idx file must also
+be supplied.
+
+The program can optionally call mpfs2-make-code to generate a HTML
+test file too.
+
+All the real work is actually done by other mpfs2-* programs: these
+must be on the user's PATH.
+
+=head1 REQUIRED ARGUMENTS
+
+Only one argument is necessary: the name of the directory containing
+the files. Suppose this directory is called image, and contains a file
+foo.gif. Then the command
+
+  mpfs2-image image
+
+will create an MPFS2 filesystem in image.bin, containing foo.gif.
+N.B. The file is not image/foo.gif i.e. the image directory is a just
+a container.
+
+=head1 OPTIONS
+
+=over
+
+=item --idx=[file]
+
+Specify the name of a IDX file, canonically called HTTPPrint.idx, then
+index all the files. See L<mpfs2-indexer> for more details.
+
+=item --index_file_re=[regular_expression]
+
+Only some files should be indexed: this regular expression selects
+them. By default it is /\.(html?|txt)$/ which will include .htm,
+.html, and .txt files.
+
+=item --test=[file]
+
+Generate an HTML file which contains all the ~foo~ style terms:
+loading makes for an easy (if incomplete) test. The filename is
+relative to the current directory, so you'll usually do something like
+this:
+
+  mpfs2-image --idx=... --test=image/test.htm image
+
+Obviously if you want to make a test file, you'll need to specify an
+IDX file too.
+
+=item --image=[file]
+
+Set the name of the file to which the MPFS2 filesystem is written:
+this defaults to the directory name with .img appended.
+
+=item --force_timestamps=[time]
+
+Force the timestamps to [time] in the MPFS2 filesystem. This is
+primarily useful when testing things. [time] can be anything
+L<Date::Manip> understands.
+
+=item --max_fs_size=[size]
+
+Refuse to make a file system bigger than [size] bytes.
+
+=item --help
+
+=item --info
+
+Display this manpage.
+
+=item --verbose
+
+Display more information as the program runs.
+
+=item --fake
+
+Just print the commands, don't actually do anything.
+
+=item --version
+
+Display version number.
+
+=back
+ 
+=head1 DEPENDENCIES
+
+We use L<Getopt::Long> to parse the arguments, and L<Pod::Usage> to
+display usage information and help.
+
+The program assumes that L<mpfs2-make-code>, L<mpfs2-indexer>, and
+L<mpfs2-fsutil> are on the PATH.
+
+=head1 BUGS AND LIMITATIONS
+
+There are no known bugs in this application.
+
+It would probably be nice to control which files are indexed.
+
+Please report problems to the author.
+
+Patches are welcome.
+ 
+=head1 AUTHOR
+
+Martin Oldfield, m@mjo.tc.
+ 
+=head1 LICENCE AND COPYRIGHT
+ 
+Copyright (c) 2007 Martin Oldfield. All rights reserved.
+ 
+This module is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself. See L<perlartistic>.
+ 
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+
+
+
+       
