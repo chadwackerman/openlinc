@@ -21,4 +21,5 @@ popd >/dev/null
 
 setup html HTMLOnly0819mg2.bin
 setup iphone iPhone0819mg2.bin
+setup v2 2412n_js2.bin
 

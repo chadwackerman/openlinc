@@ -1,5 +1,6 @@
 import os
 import os.path
+import sys
 
 def find_index(name, ext, ext2):
     text_file = open(name + ext, 'rb')
@@ -20,8 +21,13 @@ def find_index(name, ext, ext2):
 
         key = text[offset:offset+64].split('~',2)[1]
 
-        print hvalue, index[value], key
-        index[value] = key
+        try:
+            print hvalue, index[value], key
+            index[value] = key
+        except:
+#           something is up with the v2 file...
+#           print >> sys.stderr, 'missing' + hvalue
+            pass
 
         c = c + 1
 

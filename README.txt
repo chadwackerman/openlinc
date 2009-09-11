@@ -25,7 +25,7 @@ perl 5.x
 perl tools require Date::Manip and YAML. To install:
 
 sudo perl -MCPAN -e 'install Date::Manip'
-sudo perl -MCPAN -e 'install YAML'
+sudo perl -MCPAN -e 'install +YAML'
 
 tested on Mac OS X 10.5.7 and Cygwin 1.5 and 1.7 (add packages perl, python, make)
 

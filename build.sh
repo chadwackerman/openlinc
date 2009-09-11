@@ -20,3 +20,5 @@ rm $1.new.c
 
 build html
 build iphone
+build v2
+
