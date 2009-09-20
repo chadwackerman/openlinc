@@ -1,0 +1,93 @@
+<html><head><link href="styles.css" rel="stylesheet" type="text/css">
+<script language="JavaScript" SRC="myJS.js"></script><script language="JavaScript"></script>
+<script language="JavaScript">
+var HA = new Array;
+HA[0] = "~MyHouse~";
+HA[1] = "X10 Controller";
+function u(sstr)
+{
+var str = "3?0263";
+if(document.getElementById("A").checked) str += "6";
+if(document.getElementById("B").checked) str += "E";
+if(document.getElementById("C").checked) str += "2";
+if(document.getElementById("D").checked) str += "A";
+if(document.getElementById("E").checked) str += "1";
+if(document.getElementById("F").checked) str += "9";
+if(document.getElementById("G").checked) str += "5";
+if(document.getElementById("H").checked) str += "D";
+if(document.getElementById("I").checked) str += "7";
+if(document.getElementById("J").checked) str += "F";
+if(document.getElementById("K").checked) str += "3";
+if(document.getElementById("L").checked) str += "B";
+if(document.getElementById("M").checked) str += "0";
+if(document.getElementById("N").checked) str += "8";
+if(document.getElementById("O").checked) str += "4";
+if(document.getElementById("P").checked) str += "C";
+str = str + sstr;
+str += "=I=3"; 
+newAJAXCommand(str);
+}</script></head>
+<body bgcolor="#F4F4F4"  onload="MakeHeader();">
+<div id="Y"></div><center>
+<table align="center">
+<tr><td align="left">
+<table class="x10h">
+<tr><td colspan=4 class='sspans'><center>House Code:</center></td></tr>
+<tr>
+<td><fieldset><input type=radio name='a' id='A'class="x10t">A</fieldset></td>
+<td><fieldset><input type=radio name='a' id='B'class="x10t">B</fieldset></td>
+<td><fieldset><input type=radio name='a' id='C'class="x10t">C</fieldset></td>
+<td><fieldset><input type=radio name='a' id='D'class="x10t">D</fieldset></td>
+</tr>
+<tr>
+<td><fieldset><input type=radio name='a' id='E'class="x10t">E</fieldset></td>
+<td><fieldset><input type=radio name='a' id='F'class="x10t">F</fieldset></td>
+<td><fieldset><input type=radio name='a' id='G'class="x10t">G</fieldset></td>
+<td><fieldset><input type=radio name='a' id='H'class="x10t">H</fieldset></td><td> </td>
+</tr>
+<tr>
+<td><fieldset><input type=radio name='a' id='I'class="x10t">I</fieldset></td>
+<td><fieldset><input type=radio name='a' id='J'class="x10t">J</fieldset></td>
+<td><fieldset><input type=radio name='a' id='K'class="x10t">K</fieldset></td>
+<td><fieldset><input type=radio name='a' id='L'class="x10t">L</fieldset></td><td> </td>
+</tr>
+<tr>
+<td><fieldset><input type=radio name='a' id='M'class="x10t">M</fieldset></td>
+<td><fieldset><input type=radio name='a' id='N'class="x10t">N</fieldset></td>
+<td><fieldset><input type=radio name='a' id='O'class="x10t">O</fieldset></td>
+<td><fieldset><input type=radio name='a' id='P'class="x10t">P</fieldset></td><td> </td>
+</tr>
+</table></td>
+
+<td align="right"><table class="x10h" align="right">
+<tr><td colspan=4 class='sspans'><center>Unit Code:</center></td></tr>
+<tr>
+<td><input type=button onclick='u("600")' class="x10"  value="1"></td>
+<td><input type=button onclick='u("E00")' class="x10"  value="2"></td>
+<td><input type=button onclick='u("200")' class="x10"  value="3"></td>
+<td><input type=button onclick='u("A00")' class="x10"  value="4"></td>
+</tr><tr>
+<td><input type=button onclick='u("100")' class="x10"  value="5"></td>
+<td><input type=button onclick='u("900")' class="x10"  value="6"></td>
+<td><input type=button onclick='u("500")' class="x10"  value="7"></td>
+<td><input type=button onclick='u("D00")' class="x10"  value="8"></td>
+</tr><tr>
+<td><input type=button onclick='u("700")' class="x10"  value="9"></td>
+<td><input type=button onclick='u("F00")' class="x10"  value="10"></td>
+<td><input type=button onclick='u("300")' class="x10"  value="11"></td>
+<td><input type=button onclick='u("B00")' class="x10"  value="12"></td>
+</tr><tr>
+<td><input type=button onclick='u("000")' class="x10"  value="13"></td>
+<td><input type=button onclick='u("800")' class="x10"  value="14"></td>
+<td><input type=button onclick='u("400")' class="x10"  value="15"></td>
+<td><input type=button onclick='u("C00")' class="x10"  value="16"></td>
+</tr></table></td></tr></table>
+<table><tr>
+<td><input type=button onclick='u("580")' class="smbuttons" value="Brt"></td>
+<td><input type=button onclick='u("280")' class="smbuttons" value="On"></td>
+<td><input type=button onclick='u("380")' class="smbuttons" value="Off"></td>
+<td align='right'><input type=button onclick='u("480")' class="smbuttons" value="Dim"></td></tr>
+<tr>
+<td colspan = 2><input type=button onclick='u("180")' class="smbuttons" value="All Lights On"></td>
+<td colspan=2><input type=button onclick='u("080")' class="smbuttons" value="All Units Off"></td>
+</tr></table></center></body></html>

@@ -1,0 +1,103 @@
+<html>
+<head>
+<title>Current Version: HTML 2.0</title>
+<link href="hstyles.css" rel="stylesheet" type="text/css">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="expires" content="0">
+</head>
+<body>
+<center>
+
+<HR>
+<table cellpadding="3" class='h1'>
+<tr><td><center><a href='hindex.htm' class='h1'>Home</a></center></td>
+<td><center><a href='hnetwork.htm' class='h1'>Settings</a></center></td>
+<td><center><a href='http://wiki.smarthome.com/index.php?title=SmartLinc_Troubleshooting_/_FAQ' target='_blank' class='h1'>Help</a></center></td></tr></table>
+<HR>
+
+<table cellpadding="3">
+<tr>
+
+<td colspan="4" align="center">
+<span class='bb1'id="FRT">~time(0)~</span>
+<span class='bb1'>  ~Days~ </span>
+<input type='button'class='mt1'value="Refresh"onclick="location.href='hnetwork.htm'"></td></tr>
+<tr>
+<td>
+<input type='button' class='t1'value='Set Time'onclick="location.href='hnetwork.htm?TD='+document.getElementById('TD').value+'=1'+'='+document.getElementById('TDA').checked+document.getElementById('TDP').checked"></td>
+
+<td colspan="3">
+<input type='text' class='t1' value = '~time(1)~' name = 'htmlt' id='TD' size='7'MAXLENGTH = '5'></input>
+<input type='Radio' class ='b6' name = 'ADT' value="f"id='TDA'><span class ='b6'>AM</span> 
+<input type='Radio' class ='b6' name = 'ADT' value="f" id='TDP'><span class ='b6'>PM</span>
+</td>
+
+</tr>
+<tr>
+<td >
+<input type='button'class='t1'value='Set Day'onclick='location.href="hnetwork.htm?D=1=1="+document.getElementById("TD1").checked+"="+document.getElementById("TD2").checked+"="+document.getElementById("TD3").checked+"="+document.getElementById("TD4").checked+"="+document.getElementById("TD5").checked+"="+document.getElementById("TD6").checked+"="+document.getElementById("TD7").checked'></td><td colspan="3" class="b6">
+<input type="Radio" id="TD1" value="1" >Mon
+<input type="Radio" id="TD2" value="2" >Tue
+<input type="Radio" id="TD3" value="3" >Wed
+<input type="Radio" id="TD4" value="4" >Thur<br>
+<input type="Radio" id="TD5" value="5" >Fri
+<input type="Radio" id="TD6" value="6" >Sat
+<input type="Radio" id="TD7" value="7" >Sun
+</td>
+
+</tr>
+</table>
+<br>
+<input type='button'  class='t1' value='Set House Name'onclick='location.href="hnetwork.htm?MY="+document.getElementById("MY").value+"=1"'>
+
+<input type='text' value = "~MyHouse~" class='t1' id='MY' size='15'MAXLENGTH='15'></input>
+<br><br>
+<input type='button'  class='t1' value='Back to Choice of Rooms' onclick=(location.href='hindex.htm')></input>
+<br><br>
+<span class='t1'>Current Network Settings</span>
+<table cellpadding="3" class='t1'>
+<tr><td>PLM Version:</td><td><span id="PV">~network(0)~</span></td></tr>
+<tr><td>Firmware Version:</td><td> <span id="EV">~network(1)~</span></td></tr>
+<tr><td>Insteon ID:</td><td> <span id="II">~network(2)~</span></td></tr>
+<tr><td>MAC Address:</td><td> <span id="MA">~network(3)~</span></td></tr>	
+<tr><td>Port:</td><td> <span id="PT">~network(4)~</span></td></tr>	
+<tr><td>Mask:</td><td> <span id="MK">~network(5)~</span></td></tr>	
+<tr><td>DHCP:</td><td> <span id="MK">~network(10)~</span></td></tr>	
+<tr><td>GateWay:</td><td> <span id="GW">~network(6)~</span></td></tr>	
+<tr><td>IP:</td><td> <span id="IP">~network(7)~</span></td></tr><br><br>
+</table>
+
+<a href='hconfig.htm' class='t1'>Change Network Settings</a><br><br>
+<a href='mpfsupload' class='t1'>Download New Application Version</a><br><br>
+<a href='ha.htm' class='t1'>Authentication</a><br><br>
+<span class='t1'>Version: HTML 2.0</span><br><br>
+</center>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

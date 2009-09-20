@@ -1,0 +1,205 @@
+<html>
+<head>
+<link href="styles.css" rel="stylesheet" type="text/css">
+<script language="JavaScript" SRC="myJS.js">
+</script>
+<script language="JavaScript">
+var HA = new Array;
+HA[0] = "~MyHouse~";
+HA[1] = "~CurrentRoom~";
+HA[2] = "~time(1)~";
+var CD = new Array;
+CD[0] = "~dc(0)~";
+CD[1] = "~dc(1)~";
+CD[2] = "~dc(2)~";
+CD[3] = "~dc(3)~";
+CD[4] = "~dc(4)~";
+CD[5] = "~dc(5)~";
+CD[6] = "~dc(6)~";
+var CC = new Array;
+CC[0] = "~cc(0)~";
+CC[1] = "~cc(1)~";
+CC[2] = "~cc(2)~";
+CC[3] = "~cc(3)~";
+
+function UpdateStatusC(xmlData)
+{
+var str1,str2,str3;
+    str1 = getXMLValue(xmlData, 'CLS');
+    str2 = getXMLValue(xmlData, 'CLSI');
+    str3 =  getXMLValue(xmlData, 'CLSG');
+    if(str1!=null) document.getElementById('CLS').innerHTML = str1;
+    else          document.getElementById('CLS').innerHTML = " ";
+    if(str2!=null) document.getElementById('CLSI').innerHTML = str2;
+    else          document.getElementById('CLSI').innerHTML = " ";
+    if(str3!=null) document.getElementById('CLSG').innerHTML = str3;
+    else          document.getElementById('CLSG').innerHTML = " ";
+    
+setTimeout("newAJAXCommand('Linkstatus.xml', UpdateStatusC)",1000);
+}
+
+function UpdateAllandgoback()
+{
+var newgroup,datastr,str;
+if(document.getElementById('G01').value == "")
+    newgroup = "-=2=f=";
+else
+    {
+    if(document.getElementById('SR').checked)
+        newgroup = document.getElementById('G01').value+"=2=t=";
+    else
+        newgroup = document.getElementById('G01').value+"=2=f=";
+    }
+if(document.getElementById('TS01').value == "")
+        datastr = "00:00=";
+else    datastr = document.getElementById('TS01').value+"=";
+if(document.getElementById('TSA').checked)
+    datastr +="t";
+else
+    datastr +="f";
+if(document.getElementById('TSP').checked)
+    datastr +="t=";
+else
+    datastr +="f=";
+if(document.getElementById('TE01').value == "")
+        datastr += "00:00=";
+else    datastr +=document.getElementById('TE01').value+"=";
+if(document.getElementById('TEA').checked)
+    datastr +="t";
+else
+    datastr +="f";
+if(document.getElementById('TEP').checked)
+    datastr +="t=";
+else
+    datastr +="f=";
+if(document.getElementById('TD1').checked)
+   datastr +="t=";
+else
+   datastr +="f=";
+if(document.getElementById('TD2').checked)
+   datastr +="t=";
+else
+   datastr +="f=";
+if(document.getElementById('TD3').checked)
+   datastr +="t=";
+else
+   datastr +="f=";
+if(document.getElementById('TD4').checked)
+   datastr +="t=";
+else
+   datastr +="f=";
+if(document.getElementById('TD5').checked)
+   datastr +="t=";
+else
+   datastr +="f=";
+if(document.getElementById('TD6').checked)
+   datastr +="t=";
+else
+   datastr +="f=";
+if(document.getElementById('TD7').checked)
+   datastr +="t=";
+else
+   datastr +="f=";
+ 
+if(document.getElementById('C1').checked)
+   datastr +="t=";
+else
+   datastr +="f=";
+if(document.getElementById('C2').checked)
+   datastr +="t=";
+else
+   datastr +="f=";
+if(document.getElementById('C3').checked)
+   datastr +="t=";
+else
+   datastr +="f=";
+if(document.getElementById('C4').checked)
+   datastr +="t=";
+else
+   datastr +="f=";
+newAJAXCommand('2?S'+'~CurrGrp(1)~='+newgroup+datastr);
+setTimeout("location.href='~lastcontrol~'",1000);
+}
+
+function UpdateChecks()
+{
+for (var i=1;i<=7;i++)
+    if(CD[i-1] == "true")   document.getElementById('TD'+i).checked = true;
+    else                    document.getElementById('TD'+i).checked = false;
+for (i=1;i<=4;i++)
+    if(CC[i-1] == "true")   document.getElementById('C'+i).checked = true;
+    else                    document.getElementById('C'+i).checked = false;
+}
+</script>
+</head>
+<body bgcolor="#F4F4F4" onload="MakeHeader();MakeRFooter();UpdateChecks();newAJAXCommand('rstatus.xml', UpdateStatusL);setTimeout(_scrollToTop, 100);">
+
+<div id="Y"> </div>
+
+<center>
+<table cellpadding=3 cellspacing=15><tr>
+<td><input type='button' class='smbuttons'  value="Save and return" onclick="UpdateAllandgoback();"> </td>
+<td><input type='button' class='smbuttons'  value="Cancel and return" onclick="location.href='~lastcontrol~'"></td>
+</tr></table>
+
+<table cellpadding=3 cellspacing=10>
+<tr><td class='spans'>Scene Name</td>
+<td><input type='text' class='itext' value ='~CurrentGroup~' id= 'G01'  MAXLENGTH='15' size='15'></td>
+<td><input type='checkbox' class='bigcheck' checked='checked' id='SR'><label for='SR'><font size='18'>Show</font></label><td></tr>
+<tr><td class='spans'>Scene Devices</td>
+<td><input type='button' class='medbuttons'  value="Add" onclick="newAJAXCommand('Linkstatus.xml', UpdateStatusC);newAJAXCommand('0?09'+'~CurrGrp(1)~'+'=I=0')"></td>
+<td><input type='button' class='medbuttons'  value="Remove" onclick="newAJAXCommand('Linkstatus.xml', UpdateStatusC);newAJAXCommand('0?0A'+'~CurrGrp(1)~'+'=I=0')"></td></tr>
+<tr><td></td><td colspan=2 class='sspans'>Press Add or Remove twice for multiple devices</td></tr>
+<tr><td class='spans'>Add/Remove Status</td>
+<td colspan=2>
+<table border=4px width=625>
+<tr><td width=400 class='spans' id="CLSI">~Instructions~</td>
+<td width=150 rowspan=2 class='spans' id="CLSG">~CLGroups~</td>
+<td width=75 rowspan=2> <input type='button' class='smbuttons'  value="Done" onclick="newAJAXCommand('0?08=I=0');">
+</td></tr>
+<tr><td width=400 class='spans' id="CLS">~LinkStatus~</td></tr>
+</table>
+</td>
+</tr>
+<tr><td class='spans'>Test Scene</td>
+<td><input type='image' src = 'bright.gif' onclick=(newAJAXCommand('0?15~CurrGrp(1)~=I=0'))>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type='image' src = 'on.gif' onclick=(newAJAXCommand('0?11~CurrGrp(1)~=I=0'))></td>
+<td><input type='image' src = 'off.gif' onclick=(newAJAXCommand('0?13~CurrGrp(1)~=I=0'))>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type='image' src = 'dim.gif' onclick=(newAJAXCommand('0?16~CurrGrp(1)~=I=0'))></td></tr>
+<tr><td class='spans'>Show Controls</td>
+<td class="cb">&nbsp;<input type='checkbox'  class='bigcheck'id='C1'>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type='checkbox'class='bigcheck' id='C2'></td>
+<td class="cb">&nbsp;&nbsp;&nbsp;<input type='checkbox'  class='bigcheck'id='C3'>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type='checkbox' class='bigcheck' id='C4'></td></tr>
+<tr><td class='spans'>On Time</td>
+<td class="cb"><input type='text' id ='TS01'  class='itext' value ='~CurrentTS~' size='5'>
+<input type='Radio' class='bigcheck'name = 'ST' id='TSA'>AM 
+<input type='Radio' class='bigcheck'name = 'ST' id='TSP'>PM</td></tr>
+<tr><td class='spans'>Off Time</td>
+<td class="cb">
+<input type='text' id = 'TE01' class='itext' value ='~CurrentTE~' size='5'>
+<input type='Radio' class='bigcheck' name = 'ET'id='TEA' >AM 
+<input type='Radio' class='bigcheck'name = 'ET' id='TEP'>PM</td></tr>
+<tr><td class='spans'>Days of Week</td>
+<td colspan="2" class="cb">
+<input type="checkbox" class='bigcheck'id="TD1" name="days" value="1" >Mon
+<input type="checkbox" class='bigcheck'id="TD2" name="days" value="2" >Tue
+<input type="checkbox" class='bigcheck'id="TD3" name="days" value="3" >Wed
+<input type="checkbox" class='bigcheck'id="TD4" name="days" value="4" >Thur
+<input type="checkbox" class='bigcheck'id="TD5" name="days" value="5" >Fri
+<input type="checkbox" class='bigcheck'id="TD6" name="days" value="6" >Sat
+<input type="checkbox" class='bigcheck' id="TD7" name="days" value="7" >Sun</td></tr>
+</table>
+<table cellpadding=3 cellspacing=15>
+<tr><td><input type='button' class='smbuttons'  value="Save and return" onclick="UpdateAllandgoback();"> </td>
+<td><input type='button' class='smbuttons'  value="Cancel and return" onclick="location.href='~lastcontrol~'"></td></tr></table>
+</center>
+<br><br>
+<div id="foot"> </div>
+<br><br>
+</body>
+</html>

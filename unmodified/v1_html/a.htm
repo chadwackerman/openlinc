@@ -1,0 +1,27 @@
+<html><head><link href="styles.css" rel="stylesheet" type="text/css" ></head>
+<body><center>
+<HR>
+<table cellpadding="3" class = 'h1'>
+<tr><td><center><a href='index.htm' class = 'h1'>Home</a></center></td>
+<td><center><a href='network.htm' class = 'h1'>Settings</a></center></td>
+<td><center><a href='http://wiki.smarthome.com/index.php?title=SmartLinc_Help' target='_blank' class = 'h1'>Help</a></center></td></tr></table>
+<HR>
+<table cellpadding="3" class = 'h1'>
+<tr><td>Set Optional Login (Case Sensitive)</td></tr>
+<tr><td>User Name:<input type='text'  class = 't1' value = "~MyUn~" class='t1' id='Un' size='10'MAXLENGTH='10'></input></td><td> *Blank = No Authentication</td> </tr>
+<tr><td>Password:<input type='Password' class = 't1' value = "*****"class='t1' id='Pw' size='10'MAXLENGTH='10'></input></td><td>a-Z and 0-9</tr>
+
+<tr><td>
+
+<input type='button'  class='b1' value='Set User Name and Password'onclick='location.href="a.htm?L="+document.getElementById("Un").value+"=1="+document.getElementById("Pw").value'>
+</td></tr><tr></tr></table><br><br>
+
+
+
+<form name="data"action="a.htm?XL=M=1" method="get">
+<input class='b1' type="submit" value="Clear All Labels" /></form>
+
+<form name="data"action="a.htm?XT=M=1" method="get">
+<input class='b1' type="submit" value="Clear All Timers" /></form>
+
+</body></html>

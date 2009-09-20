@@ -1,0 +1,133 @@
+<html>
+<head>
+
+<title>~MyHouse~ Powered by INSTEON SmartLinc</title>
+
+<link href="styles.css" rel="stylesheet" type="text/css">
+
+<script language="JavaScript" SRC="myJS.js">
+
+
+</script>
+
+<noscript>Your browser does not have JavaScript enabled. Try indexh.htm</noscript>
+
+<script language="JavaScript">
+
+//Your browser does not support JavaScript. Try indexh.htm
+
+var HA = new Array;
+
+HA[0] = "~MyHouse~";
+HA[1] = "Choose A Room";
+HA[2] = "<a class = 'handf' href='network.htm'>Time<a>";
+
+var MA = new Array;
+
+MA[0] = "~rm(0)~";
+MA[1] = "~rm(1)~";
+MA[2] = "~rm(2)~";
+MA[3] = "~rm(3)~";
+MA[4] = "~rm(4)~";
+MA[5] = "~rm(5)~";
+MA[6] = "~rm(6)~";
+MA[7] = "~rm(7)~";
+MA[8] = "~rm(8)~";
+MA[9] = "~rm(9)~";
+MA[10] = "~rm(10)~";
+MA[11] = "~rm(11)~";
+MA[12] = "~rm(12)~";
+MA[13] = "~rm(13)~";
+MA[14] = "~rm(14)~";
+MA[15] = "~rm(15)~";
+
+
+var index = 0;
+var RCA = new Array;
+
+RCA[index++] = "~roomcheck(0)~";
+RCA[index++] = "~roomcheck(1)~";
+RCA[index++] = "~roomcheck(2)~";
+RCA[index++] = "~roomcheck(3)~";
+RCA[index++] = "~roomcheck(4)~";
+RCA[index++] = "~roomcheck(5)~";
+RCA[index++] = "~roomcheck(6)~";
+RCA[index++] = "~roomcheck(7)~";
+RCA[index++] = "~roomcheck(8)~";
+RCA[index++] = "~roomcheck(9)~";
+RCA[index++] = "~roomcheck(10)~";
+RCA[index++] = "~roomcheck(11)~";
+RCA[index++] = "~roomcheck(12)~";
+RCA[index++] = "~roomcheck(13)~";
+RCA[index++] = "~roomcheck(14)~";
+
+function StartShowRooms() 
+{
+var i;
+var count = 0;
+
+for(i=1;i<=15;i++)
+  {
+    if (i<10) 
+    {
+    vstr1 = "0" + i;
+    }
+    else
+    {
+    vstr1 = i;
+    }
+    
+    if (RCA[i-1] == 'false' || MA[i-1] == "" )
+        {
+        target = document.getElementById("R"+vstr1);
+        target.style.display="none";
+        count++;
+        }
+        
+   }
+   
+if(count == 15) //if 0 1
+        {
+        target = document.getElementById("R01");
+        target.style.display="";
+        }
+
+}
+
+
+function MakeIndexControl()
+{
+
+var vstr = "00";
+var Obj  = document.getElementById('X');
+var htmfile = "r";
+
+for (var i=1;i<=15;i++)
+{
+
+if (i<10) 
+{
+vstr = "0" + i;
+}
+else
+{
+vstr = i;
+}
+Obj.innerHTML = Obj.innerHTML + "<input type='button' class='roombuttons' ID='R"+vstr+"'value='"+ MA[i-1] + "' onclick=(location.href='"+htmfile + vstr + ".htm')>";
+}
+}
+</script>
+</head>
+
+<body bgcolor="#F4F4F4" onload="MakeHeader();MakeFooter();MakeIndexControl();StartShowRooms();setTimeout(_scrollToTop, 100);">
+
+<div id="Y"> </div>
+<br><br>
+<center><a class='spans' href='network.htm'>~message~</a>
+<div id="X"> </div>
+</center>
+<div id="Z"> </div>
+<br><br>
+<div id="foot">
+</body>
+</html>

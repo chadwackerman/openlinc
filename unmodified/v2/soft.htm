@@ -1,0 +1,107 @@
+<html><head><link href="styles.css" rel="stylesheet" type="text/css">
+<script language="JavaScript" SRC="myJS.js"></script>
+<script language="JavaScript">
+var HA = new Array;
+HA[3] = "~URL(1)~";
+HA[1] = " ~CurrentRoom~ ~CurrentGroup~";
+HA[0] = "~MyHouse~";
+HA[2] = "<a class = 'handf' href='network.htm'>Time</a>";
+
+var CCs = new Array;
+CCs[0] = "~ccs(0)~";
+CCs[1] = "~ccs(1)~";
+CCs[2] = "~ccs(2)~";
+CCs[3] = "~ccs(3)~";
+
+setTimeout("newAJAXCommand('buffstatus.xml', UpdateStatusB)",1000);
+function UpdateStatusB(xmlData)
+{
+var str1 = getXMLValue(xmlData, 'BS');
+document.getElementById('BS').innerHTML = "Insteon Buffer("+str1+")";
+setTimeout("newAJAXCommand('buffstatus.xml', UpdateStatusB)",1000);
+}
+
+
+function UpdateAllandgoback()
+{
+var datastr;
+
+if(document.getElementById('ONString').value == "")
+    datastr = "-=2f";
+else
+    {
+    if(document.getElementById('ONc').checked)
+        datastr = document.getElementById('ONString').value+"=2t";
+    else
+        datastr = document.getElementById('ONString').value+"=2f";
+    }
+    
+if(document.getElementById('OFFString').value == "")
+    datastr += "f-";
+else
+    {
+    if(document.getElementById('OFFc').checked)
+        datastr += "t"+document.getElementById('OFFString').value;
+    else
+        datastr += "f"+document.getElementById('OFFString').value;
+    }
+    
+ 
+newAJAXCommand('2?C'+'~CurrGrp(1)~='+datastr);
+
+setTimeout("location.href='setup.htm?~CurrentRoomOff~=~CurrentRoomNo~=F'",1000);
+
+}
+
+function UpdateChecks()
+{
+
+    if(CCs[1] == "t")   document.getElementById('ONc').checked = true;
+    else                   document.getElementById('ONc').checked = false;
+    if(CCs[3] == "t")   document.getElementById('OFFc').checked = true;
+    else                    document.getElementById('OFFc').checked = false;
+    
+    document.getElementById('ONString').value  = CCs[0];
+    document.getElementById('OFFString').value = CCs[2];
+}
+</script></head>
+<body bgcolor="#F4F4F4" onload="MakeHeader();UpdateChecks();">
+<div id="Y"> </div>
+
+<center>
+<br>
+<span class='itext'>Customize the Standard Controls</span><br>
+<table cellpadding=3 cellspacing=15>
+<tr><td><input type='button' class='smbuttons'  value="Save and return" onclick="UpdateAllandgoback();"> </td>
+<td><input type='button' class='smbuttons'  value="Cancel and return" onclick="location.href='setup.htm?~CurrentRoomOff~=~CurrentRoomNo~=F'"></td></tr></table>
+<table>
+<tr>
+<td> <input type='image' src = 'on.gif' onclick="newAJAXCommand('3?' + document.getElementById('ONString').value + '=I=3')"></td>
+<td><input type='text'  class='set' value ='0261011101' id= 'ONString'  MAXLENGTH='44' size='31'></td>
+<td><input type="checkbox" class='bc'id="ONc"></td><td class='bc'>Custom On Command</td>
+</tr>
+<tr>
+<td><input type='image' src = 'off.gif' onclick="newAJAXCommand('3?' + document.getElementById('OFFString').value + '=I=3')"></td>
+<td><input type='text'  class='set' value ='0261011301' id= 'OFFString'  MAXLENGTH='44' size='31'></td>
+<td><input type="checkbox" class='bc'id="OFFc"></td><td class='bc'>Custom Off Command</td>
+</tr>
+<tr><td colspan=4 class='set'><center>Current Scene Number = ~cgh~</center></td></tr></table>
+<br><br>
+<table>
+
+
+<tr><td colspan=2 class='itext'>Examples:</td></tr>
+<tr><td class='set'>Direct On to ID 08B6EA Command:</td><td class='itext'>026208B6EA0F11FF</td></tr>
+<tr><td class='set'>X10 A1AOn command:</td><td class='itext'>02636600P102636280</td></tr>
+<tr><td class='set'>Group 4 Fast On Command:</td><td class='itext'>0261041204</td></tr>
+<tr><td class='set'>All Groups Off Command:</td><td class='itext'> 0261FF13FF</td></tr>
+<tr><td class='set'>A1 and All Groups Off Command:</td><td class='itext'>02636680P10261FF13FF</td></tr>
+<tr><td class='set'>Trigger I2 Device Command:</td><td class='itext'>02621006D01F30000100001300000000000000000000</td></tr>
+</table>
+
+<br><br><span id="BS" class='cb'>Insteon Buffer(~buffer(0)~)</span><br><br>
+
+<table cellpadding=3 cellspacing=15>
+<tr><td><input type='button' class='smbuttons'  value="Save and return" onclick="UpdateAllandgoback();"> </td>
+<td><input type='button' class='smbuttons'  value="Cancel and return" onclick="location.href='setup.htm?~CurrentRoomOff~=~CurrentRoomNo~=F'"></td></tr></table>
+</center></body></html>

@@ -1,0 +1,104 @@
+<html>
+<head>
+<link href="styles.css" rel="stylesheet" type="text/css">
+<script language="JavaScript" SRC="myJS.js">
+</script>
+<script language="JavaScript">
+
+var HA = new Array;
+HA[0] = "~MyHouse~";
+HA[1] = "~CurrentRoom~";
+HA[2] = "<a class = 'handf' href='network.htm'>Time<a>";
+var MA = new Array;
+MA[0] = "~cg(0)~";
+MA[1] = "~cg(1)~";
+MA[2] = "~cg(2)~";
+MA[3] = "~cg(3)~";
+MA[4] = "~cg(4)~";
+MA[5] = "~cg(5)~";
+MA[6] = "~cg(6)~";
+MA[7] = "~cg(7)~";
+MA[8] = "~cg(8)~";
+MA[9] = "~cg(9)~";
+MA[10] = "~cg(10)~";
+MA[11] = "~cg(11)~";
+MA[12] = "~cg(12)~";
+MA[13] = "~cg(13)~";
+MA[14] = "~cg(14)~";
+MA[15] = "~cg(15)~";
+var SCA = new Array;
+SCA[0] = "~sct(0)~";
+SCA[1] = "~sct(1)~";
+SCA[2] = "~sct(2)~";
+SCA[3] = "~sct(3)~";
+SCA[4] = "~sct(4)~";
+SCA[5] = "~sct(5)~";
+SCA[6] = "~sct(6)~";
+SCA[7] = "~sct(7)~";
+SCA[8] = "~sct(8)~";
+SCA[9] = "~sct(9)~";
+SCA[10] = "~sct(10)~";
+SCA[11] = "~sct(11)~";
+SCA[12] = "~sct(12)~";
+SCA[13] = "~sct(13)~";
+SCA[14] = "~sct(14)~";
+SCA[15] = "~sct(15)~";
+
+function makescenes()
+{
+var Obj  = document.getElementById('X');
+var j;
+for (var i=1;i<=15;i+=2)
+{
+j = i+1;
+Obj.innerHTML =  Obj.innerHTML + "<table  width = '100%' cellpadding='10' cellspacing = '3'><tr><td width = '20%' ><input type='text' class='itext' value ='"+MA[i-1]+"' id= 'R"+i+"' MAXLENGTH='15' size='15'></input></td><td width = '20%' ><input type='checkbox' class='bigcheck' id='SR"+i+"'></input><label  class='cb' for='SR"+i+"'>Show</label></td><td width = '20%' ><input type='text' class='itext' value ='"+MA[i]+"' id= 'R"+j+"' MAXLENGTH='15' size='15'></input></td><td width = '20%' ><input type='checkbox' class='bigcheck' id='SR"+j+"'></input><label  class='cb' for='SR"+j+"'>Show</label></td></tr></table><br>";
+}
+}
+function UpdateAllandgoback(p)
+{
+var newgroup,datastr,str;
+var i;
+datastr = " ";
+for(i=1;i<=16;i++)
+{
+datastr += "S"+i+"=";
+
+if(document.getElementById('SR'+i).checked)     datastr += "t";
+else                                        datastr += "f";
+
+if(document.getElementById('R'+i).value == "")   datastr += "-";
+else                                        datastr +=document.getElementById('R'+i).value;
+
+datastr += "&";
+}
+newAJAXCommand('scenes.htm?P'+'~CurrentRoomNo~',null,null,datastr);
+if(p==1)setTimeout("location.href='~lastcontrol~'",2000);
+}
+function UpdateAllChecks()
+{
+for (var i=1;i<=16;i++)
+    {    
+  if(SCA[i-1] == "true" || SCA[i-1] == "True")  document.getElementById('SR'+i).checked = true;
+  if(SCA[i-1] == "True" || SCA[i-1] == "False")  document.getElementById('R'+i).style.color = '#000080';
+    }
+}
+</script>
+</head>
+<body bgcolor="#F4F4F4" onload="MakeHeader();MakeRFooter();makescenes();UpdateAllChecks();setTimeout(_scrollToTop, 100);">
+<div id="Y"> </div>
+<br>
+<center><table cellpadding=3 cellspacing=15><tr>
+<td><input type='button' class='smbuttons'  value="Save and return" onclick="UpdateAllandgoback(1);"> </td>
+<td><input type='button' class='smbuttons'  value="Cancel and return" onclick="location.href='~lastcontrol~'"></td>
+</tr></table></center>
+
+<div id="X"> </div>
+<br>
+<center><table cellpadding=3 cellspacing=15><tr>
+<td><input type='button' class='smbuttons'  value="Save and return" onclick="UpdateAllandgoback(1);"> </td>
+<td><input type='button' class='smbuttons'  value="Cancel and return" onclick="location.href='~lastcontrol~'"></td>
+</tr></table></center>
+<br>
+<div id="foot"> </div>
+</body>
+</html>

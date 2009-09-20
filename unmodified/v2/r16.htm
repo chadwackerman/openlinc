@@ -1,0 +1,101 @@
+<html><head><title>Thermostat Powered by INSTEON SmartLinc</title>
+<link href="styles.css" rel="stylesheet" type="text/css">
+<script language="JavaScript" SRC="myJS.js"></script>
+<script language="JavaScript" SRC="t.js"></script>
+<script language="JavaScript">
+var HA = new Array;
+HA[0] = "~MyHouse~";
+HA[1] = " ~room(15)~";
+HA[2] = "<a class = 'handf' href='network.htm'>Time<a>";
+HA[3] = "~URL(16)~"; 
+
+
+function showunshow()
+{
+var Obj  = document.getElementById('ans2');
+var Obj2  = document.getElementById('su');
+
+if(Obj.style.display=="none")
+    {
+    Obj.style.display="";
+    Obj2.innerHTML = '-';
+    newAJAXCommand('1?a=-=1');
+    }
+else  
+    {
+    Obj.style.display="none";
+    Obj2.innerHTML = '+';
+    newAJAXCommand('1?a=+=1');
+    } 
+}
+
+function makeframe()
+{
+var Obj  = document.getElementById('F');
+
+if( HA[3] != "*")   Obj.innerHTML = "<center><iframe width='320px' height='240px'src='"+HA[3]+"' more attributes>Does Not support iframe</iframe></center>";
+}
+</script></head>
+<body bgcolor="#F4F4F4"onload="MakeHeader();MakeFooter();makeframe();start();">
+<div id="Y"></div>
+<br><br>
+<div id="F"></div>
+<br>
+<center>
+<table><tr><td>
+<table border='1'>
+<tr><td colspan='3' class='r02s'id='ans1'align='center'>-- &#176</td></tr>
+<tr><td colspan='3' class='set' id = 'ans2'align='center' style='~HS~'>--%</td></tr>
+</table></td><td valign='bottom'><span id = 'su' onclick=(showunshow())>+</td></tr></table>
+
+
+<table cellspacing='2'><tr><td class='set' align='center'id='stat1'></td><td class='set' align='center' id='stat2'></td>
+<td class='set' align='center' id='stat3'></td></tr></table>
+<br><br><table>
+<tr><td class='set'>Mode</td><td></td><td class='set'  align='center' id = 'ans8'>--</td>
+<td><form><select id='md' class='vsmbuttons' onchange="dorefresh(3)">
+<option SELECTED value='00'></option>
+<option value='06'>Auto</option>
+<option value='09'>Off</option>
+<option value='04'>Heat</option>
+<option value='05'>Cool</option>
+</select></form></td></tr>
+<tr><td class='set'>Fan</td><td></td><td class='set'  align='center' id = 'ans9'>--</td><td><form><select id='mdf' class='vsmbuttons' onchange="dorefresh(4)">
+<option SELECTED value='00'></option>
+<option value='08'>Fan Auto</option>
+<option value='07'>Fan On</option>
+</select></form></td></tr>
+<tr><td class='set' id='cool'>Set Point Cool</td><td></td><td class='set' align='center' id = 'ans3'>--</td>
+<td class='set'><form><select id='sc' class='vsmbuttons' onchange="dorefresh(1)">
+<SCRIPT language=JavaScript>
+document.writeln("<OPTION SELECTED>");
+for (i = 1; i < 100; i++)
+	{
+    j = i*2;
+	document.writeln("<OPTION value=\""+j+"\">"+ i);
+	}
+</SCRIPT></select></form></td></tr>
+<tr><td class='set' id='heat'>Set Point Heat</td><td></td><td class='set'  align='center' id = 'ans4'>--</td>
+<td class='set'><form><select id='sh' class='vsmbuttons' onchange="dorefresh(2)">
+<SCRIPT language=JavaScript>
+document.writeln("<OPTION SELECTED>");
+for (i = 1; i < 100; i++)
+	{
+    j = i*2;
+	document.writeln("<OPTION value=\""+j+"\">"+ i);
+	}
+</SCRIPT></select></form></td></tr>
+
+<tr><td></td><td></td><td><input type='button' class='smbuttons'  id = "B1" value="Refresh" onclick="dorefresh(0)"></td></tr>
+</table>
+</center>
+<center>
+<br><br>
+<table width='500'><tr><td width='300'>
+<input type='button'class='smbuttons' value='Save New ID' onclick="newAJAXCommand('1?V=' + document.getElementById('Vid').value + '=1')">
+</td><td width='200'>
+<input type='text'  class='itext' value ='~thermID~' id ='Vid'size='8' MAXLENGTH='8'>
+</td></tr></table>
+</center>
+<div id="foot"> </div>
+</body></html>

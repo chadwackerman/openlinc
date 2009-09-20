@@ -1,0 +1,39 @@
+<html>
+<head>
+<link href="styles.css" rel="stylesheet" type="text/css">
+<script language="JavaScript" SRC="myJS.js">
+</script>
+<script language="JavaScript">
+var HA = new Array;
+
+HA[0] = "~MyHouse~";
+HA[1] = " Change Network Settings";
+HA[2] = "~time(1)~";
+</script>
+</head>
+
+<body bgcolor="#F4F4F4" onload="MakeHeader();">
+<div id="Y"> </div>
+<br>
+<center><table cellpadding=3 cellspacing=15><tr>
+<td><input type='button' class='smbuttons'  value="*Save" onclick="newAJAXCommand('2?N=2=2='+document.getElementById('IP').value+'='+document.getElementById('GW').value+'='+document.getElementById('MK').value+'='+document.getElementById('DP').checked+'='+document.getElementById('PT').value);"> </td>
+<td><input type='button' class='smbuttons'  value="Cancel and return" onclick="location.href='network.htm'"></td>
+</tr></table>
+<br><br>
+<table cellpadding="3">
+<tr><td class='spans'>Edit IP</td>
+<td><input type='text'  class='itext' value ='~network(7)~' id= 'IP' size='15'></input></td></tr>
+<tr><td class='spans'>Edit GateWay</td>
+<td><input type='text'  class='itext' value ='~network(6)~' id= 'GW' size='15'></input></td></tr>
+<tr><td class='spans'>Edit Subnet Mask</td>
+<td><input type='text'  class='itext' value ='~network(5)~' id= 'MK' size='15'></input></td></tr>
+<tr><td class='spans'>Edit DHCP</td>
+<td class='sspans'><input type='Radio' ~network(8)~ name = 'DP' class='bigcheck'id='DP'>Enabled 
+<input type='Radio' ~network(9)~ name = 'DP' class='bigcheck'>Disabled</td></tr>
+<tr><td class='spans'>Edit Port</td>
+<td><input type='text'  class='itext' value ='~network(4)~' id= 'PT' size='15'></input></td></tr>
+<td colspan=2 class='redwarn'>*After Save,You need to cycle power on the SmartLinc and re-direct your browser</td>
+</table></center>
+<div id="foot"> </div>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<html>
+<head>
+<link href="hstyles.css" rel="stylesheet" type="text/css" >
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="expires" content="0">
+</head>
+
+<body><center>
+<span class='t1'>~MyHouse~<br>~CurrentRoom~</span>
+<HR>
+<table cellpadding="3" class = 'h1'>
+<tr><td><center><a href='hindex.htm' class = 'h1'>Home</a></center></td>
+<td><center><a href='hnetwork.htm' class = 'h1'>Settings</a></center></td>
+<td><center><a href='http://wiki.smarthome.com/index.php?title=SmartLinc_Troubleshooting_/_FAQ' target='_blank' class = 'h1'>Help</a></center></td></tr></table>
+<HR>
+
+<table cellpadding="3"class='tb4' >
+
+<tr>
+<td>Room Name</td>
+<td><input type='text'value ='~CurrentRoom~'id='R01'MAXLENGTH='15'size='10'class='b6'></td>
+<td><input type='button'class='b6'value='Update'onclick="location.href='hsetup.htm?R~CurrentRoomNo~='+document.getElementById('R01').value+'=1'"></td>
+</tr>
+
+<tr>
+<td>Scene Name</td>
+<td><input type='text'class='b6'value ='~CurrentGroup~'id='G01'MAXLENGTH='15'size='10'></td>
+<td><input type='button'class='b6'value='Update'onclick="location.href='hsetup.htm?G~CurrGrp(1)~='+document.getElementById('G01').value+'=1'"></td>
+</tr>
+
+<tr>
+<td>Scene Devices</td>
+<td><input type='button'class='b7'value="Add" onclick="location.href='hsetup.htm?09~CurrGrp(1)~=I=0'"></td>
+<td><input type='button'class='b7'value="Remove" onclick="location.href='hsetup.htm?0A~CurrGrp(1)~=I=0'"></td>
+</tr>
+
+<tr>
+<td>Add/Remove<br>Status</td>
+<td id="CLS">~LinkStatus~</td>
+<td><input type='button'class='b7'value="Refresh"onclick="location.href='hsetup.htm?'"></td>
+</tr>
+
+<tr>
+<td>Test Scene</td>
+<td><input type='button'class='b7'value= 'Brt' onclick="location.href='hsetup.htm?15~CurrGrp(1)~=I=0'"> <input type='button'class='b7'value="ON"onclick="location.href='hsetup.htm?11~CurrGrp(1)~=I=0'"></td>
+<td><input type='button'class='b7'value="OFF"onclick="location.href='hsetup.htm?13~CurrGrp(1)~=I=0'"> <input type='button'class='b7'value='Dim' onclick="location.href='hsetup.htm?16~CurrGrp(1)~=I=0'"></td>
+</tr>
+
+<tr>
+<td>On Time</td>
+<td><input type='text'id='TS01'class='b7'value ='~CurrentTS~'size='5'></td>
+<td><input type='button'class='b7'value='Update'  onclick="location.href='hsetup.htm?TS~CurrGrp(1)~='+document.getElementById('TS01').value+'=1'"></td>
+</tr>
+
+<tr>
+<td>Off Time</td>
+<td><input type='text'id='TE01'class='b7'value ='~CurrentTE~'size='5'></td>
+<td><input type='button'class='b7'value='Update'onclick="location.href='hsetup.htm?TE~CurrGrp(1)~='+document.getElementById('TE01').value+'=1'"></td>
+</tr></table>
+<input type='button'class='t1'value="Back to ~CurrentRoom~" onclick="location.href='hrall.htm?08=I=0'"></center></body></html>

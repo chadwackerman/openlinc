@@ -1,0 +1,39 @@
+<head><link href="styles.css" rel="stylesheet" type="text/css">
+<script language="JavaScript" SRC="myJS.js"></script>
+<script language="JavaScript">
+var HA = new Array;
+HA[0] = "~MyHouse~";HA[1] = "~CurrentRoom~";
+function setCharAt(str,index,ch) {
+	if(index > str.length-1) return str;
+	return str.substr(0,index) + ch + str.substr(index+1);
+}
+function UpdateAllandgoback()
+{
+var str,i,len;
+
+len = 63;
+str = new String(document.getElementById('URL01').value);
+
+for(i=0;i<=len;i++)
+    if(str.charAt(i) == '=') str = setCharAt(str,i, ' ');
+    
+if(document.getElementById('URL01').value == "")
+        newAJAXCommand('1?U=1=1=*');
+else    newAJAXCommand('1?U=1=1='+str);
+setTimeout("location.href='URL.htm'",2000);
+}
+</script>
+<body bgcolor="#F4F4F4"  onload="MakeHeader();">
+<div id="Y"> </div><br>
+<center><br><iframe width='320px' height='240px'src='~URLCurrent~' more attributes>Does Not support iframe</iframe><br><br>
+<input type='text'class='itext' value ='~URLCurrent~'id='URL01'MAXLENGTH='63'size='63'>
+</center><br><br>
+<center><table cellpadding=3 cellspacing=15><tr>
+<td><input type='button' class='smbuttons'  value="Save and Test" onclick="UpdateAllandgoback()"> </td>
+<td><input type='button' class='smbuttons'  value="Return" onclick="location.href='rooms.htm'"></td>
+</tr></table></center>
+<br><span class='sspans' >Examples:</span><br>
+<span class='itext'>http://192.168.0.200:8001/ImageViewer?Mode</span><br>
+<span class='itext'>http://www.smarthome.com</span><br>
+<span class='itext'>http://smartlinc.getmyip.com:8001/ImageViewer?Mode</span></body></html>
+

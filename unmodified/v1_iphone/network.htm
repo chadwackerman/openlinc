@@ -1,0 +1,113 @@
+<html><head><title>Current Version: iPhone 1.9</title>
+<link href="styles.css" rel="stylesheet" type="text/css">
+<script language="JavaScript" SRC="myJS.js"></script>
+<script language="JavaScript">
+function UpdateStatusF(xmlData)
+{
+document.getElementById('FRT').innerHTML = getXMLValue(xmlData, 'FRT');
+document.getElementById('DAY').innerHTML = getXMLValue(xmlData, 'DAY');
+setTimeout("newAJAXCommand('status.xml', UpdateStatusF)",1000);
+}
+var HA = new Array;
+HA[0] = "~MyHouse~";
+HA[1] = " General Settings";
+HA[2] = "~time(1)~";
+var CD = new Array;
+CD[0] = "~td(1)~";
+CD[1] = "~td(2)~";
+CD[2] = "~td(3)~";
+CD[3] = "~td(4)~";
+CD[4] = "~td(5)~";
+CD[5] = "~td(6)~";
+CD[6] = "~td(7)~";
+function UpdateAll()
+{
+var datastr="1?D=1=1";
+var c;
+var str;
+for(c=1;c<=7;c++)
+{
+str = "TD"+c;
+if(document.getElementById(str).checked)
+   datastr +="=t";
+else
+   datastr +="=f";
+}
+newAJAXCommand(datastr);
+}
+
+function UpdateDOWChecks()
+{
+for (var i=1;i<=7;i++)
+    if(CD[i-1] == "true")   document.getElementById('TD'+i).checked = true;
+    else                   document.getElementById('TD'+i).checked = false;
+}
+</script></head>
+<body bgcolor="#F4F4F4"  onload="MakeHeader();UpdateDOWChecks();newAJAXCommand('status.xml', UpdateStatusF);setTimeout(_scrollToTop, 100);">
+<div id="Y"> </div>
+<center><table cellpadding="6" >
+<tr><td><input type='button' class='smbuttons' value='Set Time'onclick='newAJAXCommand("1?TD="+document.getElementById("TD").value+"=1"+"="+document.getElementById("TDA").checked+document.getElementById("TDP").checked)' ></td><td class ='set'>
+<input type='text' class='itext' value = '~time(1)~' id='TD' size='5'MAXLENGTH = '5'></input><br>
+<input type='Radio' name = 'ADT' class='bigcheck'id='TDA'>AM 
+<input type='Radio' name = 'ADT' class='bigcheck'id='TDP'>PM</td><td>
+<span class='spans' id="FRT">~time(0)~</span>
+<span class='spans' id="DAY">  ~Days~</span></td></tr><tr><td>
+<input type='button' class='smbuttons' value='Set Day'onclick='UpdateAll()'>
+<td colspan="2" class="cb">
+<input type="Radio" class='bigcheck'id="TD1" name="days" value="1" >Mon
+<input type="Radio" class='bigcheck'id="TD2" name="days" value="2" >Tue
+<input type="Radio" class='bigcheck'id="TD3" name="days" value="3" >Wed
+<input type="Radio" class='bigcheck'id="TD4" name="days" value="4" >Thur
+<input type="Radio" class='bigcheck'id="TD5" name="days" value="5" >Fri
+<input type="Radio" class='bigcheck'id="TD6" name="days" value="6" >Sat
+<input type="Radio" class='bigcheck'id="TD7" name="days" value="7" >Sun
+</td></tr></table><br>
+<input type='button'  class='smbuttons' value='Set House Name'onclick='newAJAXCommand("1?MY="+document.getElementById("MY").value+"=1")' ></input>
+<input type='text' value = "~MyHouse~" class='itext' id='MY' size='15'MAXLENGTH='15'><br><br>
+<input type='button'  class='smbuttons' value='Back to Last Room' onclick=(location.href='~lastcontrol~')><br><br>
+<a href='x10.htm' class='smbuttons'target='_blank'>Open X10 Controller</a><br><br>
+<a href='rooms.htm'><img class ='icons' src = 'addroom.gif' border='0'></a><br>
+<a class = 'set' href='rooms.htm'>Setup Rooms</a>
+<br><br>
+<span class="spans">Current Network Settings</span>
+<table cellpadding="3" class='sspans'>
+<tr><td>PLM Version:</td><td id="PV">~network(0)~</td></tr>
+<tr><td>Firmware Version:</td><td id="EV">~network(1)~</td></tr>
+<tr><td>Insteon ID:</td><td id="II">~network(2)~</td></tr>
+<tr><td>MAC Address:</td><td id="MA">~network(3)~</td></tr>	
+<tr><td>Port:</td><td id="PT">~network(4)~</td></tr>	
+<tr><td>Mask:</td><td id="MK">~network(5)~</td></tr>	
+<tr><td>DHCP:</td><td id="MK">~network(10)~</td></tr>	
+<tr><td>GateWay:</td><td id="GW">~network(6)~</td></tr>	
+<tr><td>IP:</td><td id="IP">~network(7)~</td></tr><br><br></table>
+<a href='config.htm' class='smbuttons'>Change Network Settings</a><br><br>
+<a href='mpfsupload' class='smbuttons'>Download New Application Version</a><br><br>
+<span class="spans">Version: iPhone 1.9</span><br><br>
+<a href='a.htm' class='smbuttons'>Authentication</a><br><br>
+<div id="foot"> </div></body></html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

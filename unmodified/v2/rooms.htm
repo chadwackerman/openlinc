@@ -1,0 +1,106 @@
+<html><head>
+<link href="styles.css" rel="stylesheet" type="text/css">
+<script language="JavaScript" SRC="myJS.js"></script>
+<script language="JavaScript">
+var HA = new Array;
+HA[0] = "~MyHouse~";
+HA[1] = "Setup Rooms";
+HA[2] = "<a class = 'handf' href='network.htm'>Time<a>";
+var RA = new Array;
+RA[0] = "~rm(0)~";
+RA[1] = "~rm(1)~";
+RA[2] = "~rm(2)~";
+RA[3] = "~rm(3)~";
+RA[4] = "~rm(4)~";
+RA[5] = "~rm(5)~";
+RA[6] = "~rm(6)~";
+RA[7] = "~rm(7)~";
+RA[8] = "~rm(8)~";
+RA[9] = "~rm(9)~";
+RA[10] = "~rm(10)~";
+RA[11] = "~rm(11)~";
+RA[12] = "~rm(12)~";
+RA[13] = "~rm(13)~";
+RA[14] = "~rm(14)~";
+RA[15] = "~rm(15)~";
+
+var RCA = new Array;
+
+RCA[0] = "~rck(0)~";
+RCA[1] = "~rck(1)~";
+RCA[2] = "~rck(2)~";
+RCA[3] = "~rck(3)~";
+RCA[4] = "~rck(4)~";
+RCA[5] = "~rck(5)~";
+RCA[6] = "~rck(6)~";
+RCA[7] = "~rck(7)~";
+RCA[8] = "~rck(8)~";
+RCA[9] = "~rck(9)~";
+RCA[10] = "~rck(10)~";
+RCA[11] = "~rck(11)~";
+RCA[12] = "~rck(12)~";
+RCA[13] = "~rck(13)~";
+RCA[14] = "~rck(14)~";
+RCA[15] = "~rck(15)~";
+
+function makerooms()
+{
+var Obj  = document.getElementById('X');
+var j;
+for (var i=1;i<=15;i+=2)
+{
+j = i+1;
+Obj.innerHTML =  Obj.innerHTML + "<table  width = '100%' cellpadding='10' cellspacing = '3'><tr><td width = '20%' ><input type='text' class='itext' value ='"+RA[i-1]+"' id= 'R"+i+"' MAXLENGTH='15' size='15'></input></td><td width = '20%' ><input type='checkbox' class='bc' id='SR"+i+"'></input><label  class='cb' for='SR"+i+"'>Show Room</label><br><a class = 'cb' href='URL.htm?1="+i+"=F'>Add URL To Room</a></td><td width = '20%' ><input type='text' class='itext' value ='"+RA[i]+"' id= 'R"+j+"' MAXLENGTH='15' size='15'></input></td><td width = '20%' ><input type='checkbox' class='bc' id='SR"+j+"'></input><label  class='cb' for='SR"+j+"'>Show Room</label><br><a class = 'cb' href='URL.htm?1="+j+"=F'>Add URL To Room</a></td></tr></table><br>";
+}
+
+}
+function UpdateAllandgoback(p)
+{
+var newgroup,datastr,str;
+var i;
+
+datastr = " ";
+for(i=1;i<=16;i++)
+{
+datastr += "S"+i+"=";
+if(document.getElementById('SR'+i).checked)     datastr += "t";
+else                                        datastr += "f";
+
+if(document.getElementById('R'+i).value == "")   datastr += "-";
+else                                        datastr +=document.getElementById('R'+i).value;
+
+datastr += "&";
+}
+newAJAXCommand('rooms.htm?Post',null,null,datastr);
+if(p==1)setTimeout("location.href='index.htm'",2000);
+}
+
+function UpdateAllChecks()
+{
+for (var i=1;i<=16;i++)
+    {
+    if(RCA[i-1] == "true" || RCA[i-1] == "True")  document.getElementById('SR'+i).checked = true;
+    if(RCA[i-1] == "True" || RCA[i-1] == "False")  document.getElementById('R'+i).style.color = '#000080';
+    }
+}
+
+</script></head>
+
+<body bgcolor="#F4F4F4" onload="MakeHeader();MakeRFooter();makerooms();UpdateAllChecks();setTimeout(_scrollToTop, 100);">
+
+<div id="Y"> </div>
+<br>
+<center><table cellpadding=3 cellspacing=15><tr>
+<td><input type='button' class='smbuttons'  value="Save and return" onclick="UpdateAllandgoback(1);"> </td>
+<td><input type='button' class='smbuttons'  value="Cancel and return" onclick="location.href='index.htm'"></td>
+</tr></table></center>
+<div id="X"></div>
+<br>
+<center><table cellpadding=3 cellspacing=15><tr>
+<td><input type='button' class='smbuttons'  value="Save and return" onclick="UpdateAllandgoback(1);"> </td>
+<td><input type='button' class='smbuttons'  value="Cancel and return" onclick="location.href='index.htm'"></td>
+</tr></table></center>
+<br>
+<div id="foot"> </div>
+</body>
+</html>

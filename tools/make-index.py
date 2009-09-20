@@ -2,6 +2,8 @@ import os
 import os.path
 import sys
 
+MAX_INDEX_SIZE = 2048
+
 def find_index(name, ext, ext2):
     text_file = open(name + ext, 'rb')
     text = text_file.read()
@@ -21,18 +23,15 @@ def find_index(name, ext, ext2):
 
         key = text[offset:offset+64].split('~',2)[1]
 
-        try:
-            print hvalue, index[value], key
-            index[value] = key
-        except:
-#           something is up with the v2 file...
-#           print >> sys.stderr, 'missing' + hvalue
-            pass
+        if value > MAX_INDEX_SIZE:
+            raise Exception('value out of range -- increase MAX_INDEX_SIZE to %s' % value)
+
+        index[value] = key
 
         c = c + 1
 
 index = {}
-for x in range(0,1024):
+for x in range(0, MAX_INDEX_SIZE):
     index[x] = 'x%s' % x
 
 files = os.listdir('.')
@@ -49,7 +48,7 @@ for filename in files:
         find_index(name, ext, ext2)
 
 s = ''
-for k in range(0,1024):
+for k in range(0, MAX_INDEX_SIZE):
     s += index[k] + '|'
 
 print s[:-1]

@@ -1,0 +1,36 @@
+<html><head><link href="styles.css" rel="stylesheet" type="text/css" >
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="expires" content="0">
+</head>
+
+<body bgcolor="#F4F4F4">
+<center>
+<span class = 't1'>~MyHouse~</span>
+<HR>
+<table cellpadding="3" class = 'h1'>
+<tr><td><center><a href='index.htm' class = 'h1'>Home</a></center></td>
+<td><center><a href='network.htm' class = 'h1'>Settings</a></center></td>
+<td><center><a href='http://wiki.smarthome.com/index.php?title=SmartLinc_Help' target='_blank' class = 'h1'>Help</a></center></td></tr></table>
+<HR>
+<center><table cellpadding=3 cellspacing=15><tr>
+<td><input type='button' class='b1' value="*Save" onclick="location.href='config.htm?N=2=2='+document.getElementById('IP').value+'='+document.getElementById('GW').value+'='+document.getElementById('MK').value+'='+document.getElementById('DP').checked+'='+document.getElementById('PT').value"> </td>
+<td><input type='button' class='b1'  value="Cancel and return" onclick="location.href='network.htm'"></td>
+</tr></table>
+<br><br>
+<table cellpadding="3">
+<tr><td><span  class='b1'>Edit IP</span></td>
+<td><input type='text'  class='b1' value ='~network(7)~' id= 'IP' size='15'></input></td></tr>
+<tr><td><span  class='b1'>Edit GateWay</span></td>
+<td><input type='text'  class='b1' value ='~network(6)~' id= 'GW' size='15'></input></td></tr>
+<tr><td><span  class='b1'>Edit Subnet Mask</span></td>
+<td><input type='text'  class='b1' value ='~network(5)~' id= 'MK' size='15'></input></td></tr>
+<tr><td><span  class='b1'>Edit DHCP</span></td>
+<td class='b1'><input type='Radio' ~network(8)~ name = 'DP' id='DP'>Enabled 
+<input type='Radio' ~network(9)~ name = 'DP' >Disabled</td></tr>
+<tr><td><span  class='b1'>Edit Port</span></td>
+<td><input type='text'  class='b1'value ='~network(4)~' id= 'PT' size='15'></input></td></tr>
+<td colspan=2><span  class='st1'>*After Save,You need to cycle power on the SmartLinc and re-direct your browser</span></td>
+</table></center>
+<div id="foot"> </div>
+</body>
+</html>

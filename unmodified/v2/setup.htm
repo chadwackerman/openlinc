@@ -1,0 +1,265 @@
+<html><head>
+<link href="styles.css" rel="stylesheet" type="text/css">
+<script language="JavaScript" SRC="myJS.js"></script>
+<script language="JavaScript">
+var HA = new Array;
+HA[0] = "~MyHouse~";
+HA[1] = "~CurrentRoom~";
+HA[2] = "~time(1)~";
+var CD = new Array;
+CD[0] = "~dc(0)~";
+CD[1] = "~dc(1)~";
+CD[2] = "~dc(2)~";
+CD[3] = "~dc(3)~";
+CD[4] = "~dc(4)~";
+CD[5] = "~dc(5)~";
+CD[6] = "~dc(6)~";
+CD[7] = "~ssc(0)~";
+CD[8] = "~ssc(1)~";
+
+var CC = new Array;
+CC[0] = "~cc(0)~";
+CC[1] = "~cc(1)~";
+CC[2] = "~cc(2)~";
+CC[3] = "~cc(3)~";
+CC[4] = "~cc(4)~";
+CC[5] = "~cc(5)~";
+
+var CCs = new Array;
+CCs[1] = "~ccs(1)~";
+CCs[3] = "~ccs(3)~";
+
+function SendTestC(which)
+{
+if(which == 0) 
+	if( document.getElementById("C7").checked == true)	newAJAXCommand('0?17~CurrGrp(1)~=I=0=1');
+	else								newAJAXCommand('0?15~CurrGrp(1)~=I=0');
+if(which == 1) 
+	if (CCs[1] == "t")	newAJAXCommand('4?11~CurrGrp(1)~=I=4');
+	else			newAJAXCommand('0?11~CurrGrp(1)~=I=0');
+if(which == 2) 
+	if( CCs[3] == "t")	newAJAXCommand('4?13~CurrGrp(1)~=I=4');
+	else			newAJAXCommand('0?13~CurrGrp(1)~=I=0');
+if(which == 3) 
+	if(document.getElementById("C7").checked == true)	newAJAXCommand('0?17~CurrGrp(1)~=I=0=0');
+	else								newAJAXCommand('0?16~CurrGrp(1)~=I=0');
+}
+
+function UpdateStatusC(xmlData)
+{
+var str1,str2,str3;
+str1 = getXMLValue(xmlData, 'CLS');
+str2 = getXMLValue(xmlData, 'CLSI');
+str3 = getXMLValue(xmlData, 'CLSG');
+if(str1==null) str1 = " ";
+if(str2==null) str2 = " ";
+if(str3==null) str3 = " ";
+document.getElementById('CLS').innerHTML = str1;
+document.getElementById('CLSI').innerHTML = str2;
+document.getElementById('CLSG').innerHTML = str3;
+setTimeout("newAJAXCommand('Linkstatus.xml', UpdateStatusC)",1000);
+}
+
+function UpdateAllandgoback(which)
+{
+var newgroup,datastr,str;
+if(document.getElementById('G01').value == "")
+    newgroup = "-=2=f=";
+else
+{
+if(document.getElementById('SR').checked)
+newgroup = document.getElementById('G01').value+"=2=t=";
+else
+newgroup = document.getElementById('G01').value+"=2=f=";
+}
+if(document.getElementById('TS01').value == "")
+        datastr = "00:00=";
+else    datastr = document.getElementById('TS01').value+"=";
+if(document.getElementById('TSA').checked)
+    datastr +="t";
+else
+    datastr +="f";
+if(document.getElementById('TSP').checked)
+    datastr +="t=";
+else
+    datastr +="f=";
+if(document.getElementById('TE01').value == "")
+        datastr += "00:00=";
+else    datastr +=document.getElementById('TE01').value+"=";
+if(document.getElementById('TEA').checked)
+    datastr +="t";
+else
+    datastr +="f";
+if(document.getElementById('TEP').checked)
+    datastr +="t=";
+else
+    datastr +="f=";
+
+    for(i=1;i<=7;i++)
+        if(document.getElementById("TD"+i).checked)
+           datastr +="t=";
+        else
+           datastr +="f=";
+for(i=1;i<=4;i++)
+if(document.getElementById('C'+i).checked)
+   datastr +="t=";
+else
+   datastr +="f=";
+
+if(document.getElementById('ID01').value != "")
+    datastr += document.getElementById('ID01').value;
+else
+    datastr += "000000";
+
+if(document.getElementById('ID01').value == "")   datastr +="=f";
+else
+{
+if(document.getElementById('C5').checked)
+datastr +="=t";
+else
+datastr +="=f";
+}
+
+if(document.getElementById("C6").checked)
+   datastr +="=t";
+else
+   datastr +="=f";
+   
+if(document.getElementById("SSS").checked) datastr +="1";
+if(document.getElementById("SSM").checked) datastr +="2";
+if(document.getElementById("SSR").checked) datastr +="3";
+if(document.getElementById("SES").checked) datastr +="1";
+if(document.getElementById("SEM").checked) datastr +="2";
+if(document.getElementById("SER").checked) datastr +="3";
+
+
+newAJAXCommand('2?S'+'~CurrGrp(1)~='+newgroup+datastr);
+if(which == 2)  setTimeout("location.href='sun.htm?~CurrentRoomOff~=~CurrentRoomNo~=F'",1000);
+else
+if(which == 0)  setTimeout("location.href='~lastcontrol~'",1000);
+else           setTimeout("location.href='soft.htm?~CurrentRoomOff~=~CurrentRoomNo~=F'",1000);
+}
+
+function UpdateChecks()
+{
+var Obj  = document.getElementById("LA");
+
+if (CCs[1] == "t" || CCs[3] == "t")
+Obj.innerHTML = "<table><tr><td class='sspans' onclick='UpdateAllandgoback(1)'>Click <u>Here</u> to Edit Customized Controls</td></tr></table>";
+else
+Obj.innerHTML = "<table><tr><td class='sspans' onclick='UpdateAllandgoback(1)'>Click <u>Here</u> to Customize Controls</td></tr></table>";
+
+if(CD[7]=='1')document.getElementById('SSS').checked = true;
+if(CD[7]=='2')document.getElementById('SSM').checked = true;
+if(CD[7]=='3')document.getElementById('SSR').checked = true;
+
+if(CD[8]=='1')document.getElementById('SES').checked = true;
+if(CD[8]=='2')document.getElementById('SEM').checked = true;
+if(CD[8]=='3')document.getElementById('SER').checked = true;
+
+
+for (var i=1;i<=7;i++)
+    if(CD[i-1] == "true")   document.getElementById('TD'+i).checked = true;
+    else                    document.getElementById('TD'+i).checked = false;
+for (i=1;i<=5;i++)
+    if(CC[i-1] == "true")   document.getElementById('C'+i).checked = true;
+    else                    document.getElementById('C'+i).checked = false;
+if(CC[5] == "true")
+    {
+    document.getElementById("C6").checked = true;
+    document.getElementById("C7").checked = false;
+    }
+else
+    {
+    document.getElementById("C6").checked = false;
+    document.getElementById("C7").checked = true;
+    }
+
+}
+</script>
+</head>
+<body bgcolor="#F4F4F4" onload="MakeHeader();MakeRFooter();UpdateChecks();newAJAXCommand('rstatus.xml', UpdateStatusL);setTimeout(_scrollToTop, 100);">
+<div id="Y"> </div>
+<center>
+<table cellpadding=3 cellspacing=15><tr>
+<td><input type='button' class='smbuttons'  value="Save and return" onclick="UpdateAllandgoback(0);"> </td>
+<td><input type='button' class='smbuttons'  value="Cancel and return" onclick="location.href='~lastcontrol~'"></td>
+</tr></table>
+<table cellpadding=3 cellspacing=10>
+<tr><td class='spans'>Scene Name</td>
+<td><input type='text' class='itext' value ='~CurrentGroup~' id= 'G01'  MAXLENGTH='15' size='15'></td>
+<td><input type='checkbox' class='bc' checked='checked' id='SR'><label for='SR'><font class='itext'>Show</font></label><td></tr>
+<tr><td class='spans'>Scene Devices</td>
+<td><input type='button' class='medbuttons'  value="Add" onclick="newAJAXCommand('Linkstatus.xml', UpdateStatusC);newAJAXCommand('0?09'+'~CurrGrp(1)~'+'=I=0')"></td>
+<td><input type='button' class='medbuttons'  value="Remove" onclick="newAJAXCommand('Linkstatus.xml', UpdateStatusC);newAJAXCommand('0?0A'+'~CurrGrp(1)~'+'=I=0')"></td></tr>
+<tr><td></td><td colspan=2 class='sspans'>Press Add or Remove twice for multiple devices</td></tr>
+<tr><td class='spans'>Add/Remove Status</td>
+<td colspan=2>
+<table border=4px width=625>
+<tr><td width=400 class='spans' id="CLSI">~Instructions~</td>
+<td width=150 rowspan=2 class='spans' id="CLSG">~CLGroups~</td>
+<td width=75 rowspan=2> <input type='button' class='smbuttons'  value="Done" onclick="newAJAXCommand('0?08=I=0');">
+</td></tr>
+<tr><td width=400 class='spans' id="CLS">~LinkStatus~</td></tr>
+</table></td></tr></table>
+
+<table >
+<tr><td></td><td colspan=2>
+<div id="LA" ></div></td></tr>
+
+<tr><td class='spans'>Test Scene</td>
+<td><input type='image' src = 'bright.gif' onclick=(SendTestC(0))>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type='image' src = 'on.gif' onclick=(SendTestC(1))></td>
+<td><input type='image' src = 'off.gif' onclick=(SendTestC(2))>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type='image' src = 'dim.gif' onclick=(SendTestC(3))></td></tr>
+<tr><td class='spans'>Show Controls</td>
+<td class="cb">&nbsp;<input type='checkbox'  class='bc'id='C1'>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type='checkbox'class='bc' id='C2'></td>
+<td class="cb">&nbsp;&nbsp;&nbsp;<input type='checkbox'  class='bc'id='C3'>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type='checkbox' class='bc' id='C4'></td></tr>
+
+<tr><td class='spans'>Brt/Dim Control</td>
+<td class="cb">
+<input type='Radio' class='bc'name = 'bdb' id='C6'>Incremental 
+<input type='Radio' class='bc'name = 'bdb' id='C7'>Start Stop</td></tr>
+
+<tr><td class='spans'>On Time</td>
+<td class="cb"><input type='text' id ='TS01'  class='itext' value ='~CurrentTS~' size='5'>
+<input type='Radio' class='cb'name = 'ST' id='TSA'>AM 
+<input type='Radio' class='cb'name = 'ST' id='TSP'>PM</td>
+<td class="cb">
+<input type='Radio' class='cb'name = 'S' id='SSM'>Time
+<input type='Radio' class='cb'name = 'S' id='SSR'>Sunrise
+<input type='Radio' class='cb'name = 'S' id='SSS'>Sunset<br></td></tr>
+<tr><td class='spans'>Off Time</td>
+<td class="cb">
+<input type='text' id = 'TE01' class='itext' value ='~CurrentTE~' size='5'>
+<input type='Radio' class='cb' name = 'ET'id='TEA' >AM 
+<input type='Radio' class='cb'name = 'ET' id='TEP'>PM</td>
+<td class="cb">
+<input type='Radio' class='cb'name = 'E' id='SEM'>Time
+<input type='Radio' class='cb'name = 'E' id='SER'>Sunrise 
+<input type='Radio' class='cb'name = 'E' id='SES'>Sunset</td></tr>
+<tr><td class='spans'>Days of Week</td>
+<td colspan="2" class="cb">
+<input type="checkbox" class='bc'id="TD1" name="d" value="1" >Mon
+<input type="checkbox" class='bc'id="TD2" name="d" value="2" >Tue
+<input type="checkbox" class='bc'id="TD3" name="d" value="3" >Wed
+<input type="checkbox" class='bc'id="TD4" name="d" value="4" >Thur
+<input type="checkbox" class='bc'id="TD5" name="d" value="5" >Fri
+<input type="checkbox" class='bc'id="TD6" name="d" value="6" >Sat
+<input type="checkbox" class='bc' id="TD7" name="d" value="7" >Sun</td></tr>
+
+<tr><td class='spans'>Status Device ID</td>
+<td><input type='text' class='itext' value ='~CurrentGroupId~' id= 'ID01'  MAXLENGTH='15' size='15'></td>
+<td><input type='checkbox' class='bc' id='C5'><label for='SR'><font class='itext'>Report Status</font></label><td></tr></table>
+<table cellpadding=3 cellspacing=15>
+<tr><td><input type='button' class='smbuttons'  value="Save and return" onclick="UpdateAllandgoback(0);"> </td>
+<td><input type='button' class='smbuttons'  value="Cancel and return" onclick="location.href='~lastcontrol~'"></td></tr></table>
+</center><br><br>
+<div id="foot"> </div>
+<br><br></body></html>

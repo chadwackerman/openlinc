@@ -1,0 +1,23 @@
+<html><head><link href="styles.css" rel="stylesheet" type="text/css">
+<script language="JavaScript" SRC="myJS.js"></script><script language="JavaScript">
+var HA = new Array;
+HA[0] = "~MyHouse~";
+HA[1] = " Set Login";
+function u()
+{
+if(document.getElementById("Pw").value == "" || document.getElementById("Un").value == "")
+    newAJAXCommand("1?L=*=1=*");
+else
+    newAJAXCommand("1?L="+document.getElementById("Un").value+"=1="+document.getElementById("Pw").value);
+}
+</script></head><body bgcolor="#F4F4F4"  onload="MakeHeader();">
+<div id="Y"></div><center>
+<table cellpadding="3" class='sspans'>
+<tr><td>Set Optional Login (Case Sensitive)</td></tr>
+<tr><td>User Name:<input type='text'  value = "~MyUn~" class='itext' id='Un' size='10'MAXLENGTH='10'></input></td><td> *Blank = No Authentication</td> </tr>
+<tr><td>Password:<input type='Password'  value = "*****"class='itext' id='Pw' size='10'MAXLENGTH='10'></input></td><td>a-Z and 0-9</tr>
+<tr><td><input type='button'  class='smbuttons' value='Save User Name and Password' onclick='u();'></td></tr><tr></tr></table><br><br>
+<input type='button'class='smbuttons'value='Clear All Labels' onclick=(newAJAXCommand('1?XL=M=1'))><br><br>
+<input type='button'class='smbuttons'value='Clear All Timers' onclick=(newAJAXCommand('1?XT=M=1'))><br><br>
+<input type='button'class='smbuttons'value='Clear All URLs' onclick=(newAJAXCommand('1?XU=M=1'))><br><br>
+<input type='button'class='smbuttons'value='Reset All Check boxes' onclick=(newAJAXCommand('1?XC=M=1'))></center></body></html>

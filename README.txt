@@ -14,8 +14,25 @@ Visit http://www.openlinc.com for the latest info and pointers
 
 REQUIREMENTS:
 
-A SmartLinc Version 1 (not version 2) device
-** Version 2 is different hardware and untested at this time **
+A SmartLinc Version 1 or Version 2 device
+
+# # #
+
+WINDOWS SETUP:
+
+download and install the MPLAB IDE from microchip.com:
+http://www.microchip.com/stellent/idcplg?IdcService=SS_GET_PAGE&nodeId=1406&dDocName=en019469&part=SW007002
+
+the file you want is MPFS2.exe under \Microchip\TCPIP Stack\Utilities
+use that to compile the files (and the .idx file!) in the unmodified/ directory for your device
+
+# # #
+
+LINUX / MAC / CYGWIN SETUP:
+
+tested on Mac OS X 10.5.7 and Cygwin 1.5 and 1.7 (add cygwin packages perl, python, make)
+
+REQUIREMENTS:
 
 make
 gzip/gunzip
@@ -27,11 +44,7 @@ perl tools require Date::Manip and YAML. To install:
 sudo perl -MCPAN -e 'install Date::Manip'
 sudo perl -MCPAN -e 'install +YAML'
 
-tested on Mac OS X 10.5.7 and Cygwin 1.5 and 1.7 (add packages perl, python, make)
-
-# # # 
-
-run ./setup.sh ONLY ONCE to initialize environment
+run ./setup.sh ONLY ONCE to initialize tools and extract/generate the html and index files
 additional runs are ok but will overwrite any changes you make to the html files
 
 directories:
@@ -41,6 +54,7 @@ directories:
 
 - unmodified    original .bin files for the SmartLinc
                 from http://wiki.smarthome.com/index.php?title=SmartLinc_Troubleshooting_/_FAQ
+                also copies of generated files taken from these packages for Windows users
 
 - index         generated .idx files created by tools/make-index.py utility
                 
@@ -48,23 +62,26 @@ directories:
                 
 - iphone        iPhone/javascript web pages
 
+- v2            SmartLinc version 2 files
+
 # # #
 
 modify html pages as you wish then run ./build.sh to create new binaries
 upload to the smartlinc using instructions on the smarthome wiki (see link above)
 
-note: you may see a build error in r02.htm accessing room(1)
-this appears to be a bug in the original device files
-
 # # #
 
 TECH NOTES:
 
-The device holds slightly less than 64kb of data
-You will get an error if you exceed the storage amount
+the V1 device holds slightly less than 64kb of data
+the V2 device is expanded to 128k
+you will get an error if you exceed the storage amount
+you can always put script/images on an external server for really nice customizations, of course
 
-Note that the iPhone version is pretty close to maxxed out
-You'll have to prune some of its wacky features accordingly
+note that the iPhone version is pretty close to maxxed out
+and you'll have to prune some of its wacky features accordingly
+
+# # #
 
 Javascript mappings 
 from http://www.smarthome.com/forum/topic.asp?TOPIC_ID=4066&whichpage=1
